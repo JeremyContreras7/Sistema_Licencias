@@ -1,0 +1,162 @@
+/* css/styleregistro.css — versión con cuadro más grande */
+/* Misma paleta: verde claro #5bb04b, verde oscuro #2f7a3a,
+   naranja #f59e2f, amarillo #f6d54a, azul #1976b8 */
+
+:root{
+  --green-1: #5bb04b;
+  --green-2: #2f7a3a;
+  --orange:  #f59e2f;
+  --yellow:  #f6d54a;
+  --blue:    #1976b8;
+
+  /* Aumenté el tamaño máximo del contenedor y el padding */
+  --bg: #f5f7fa;
+  --card-bg: #ffffff;
+  --muted: #42515f;
+  --glass: rgba(27,43,60,0.06);
+  --radius: 14px;
+  --max-width: 1120px;   /* antes 920px, ahora más ancho */
+  --left-col: 420px;     /* ancho columna izquierda aumentado */
+  --font-sans: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Reset ligero */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font-sans);background:var(--bg);color:var(--muted);-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+
+/* Contenedor principal */
+.registro-wrapper{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px 20px;
+  min-height:100vh;
+}
+
+/* Card más grande */
+.registro-card{
+  width:100%;
+  max-width:var(--max-width);      /* aumento aplicado */
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  box-shadow:0 18px 60px rgba(16,24,40,0.10);
+  overflow:hidden;
+  display:grid;
+  grid-template-columns: var(--left-col) 1fr; /* columna izquierda más ancha */
+  gap:0;
+}
+
+/* Lado izquierdo: branding más espacioso */
+.registro-header{
+  background:linear-gradient(180deg, var(--green-1), var(--green-2));
+  color:#042022;
+  padding:42px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  text-align:center;
+}
+.registro-logo{
+  width:110px;    /* logo más grande */
+  height:auto;
+  border-radius:12px;
+  background:rgba(255,255,255,0.14);
+  padding:10px;
+}
+.registro-header h1{
+  font-size:1.35rem; /* texto más grande */
+  margin:0;
+  color:#042022;
+  font-weight:800;
+}
+.registro-sub{
+  font-size:1rem;
+  color:rgba(4,32,34,0.9);
+}
+
+/* Lado derecho: formulario con más espacio */
+.registro-form{
+  padding:36px 44px;  /* padding aumentado */
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.field{display:flex;flex-direction:column;gap:8px}
+.field label{font-size:0.95rem;color:var(--muted)}
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="password"],
+.field select{
+  padding:14px 16px;     /* inputs más altos */
+  border-radius:12px;
+  border:1px solid var(--glass);
+  background:#fbfdff;
+  font-size:1rem;        /* letra más grande */
+  color:var(--muted);
+  outline:none;
+  transition:box-shadow .12s, border-color .12s, transform .06s;
+}
+.field input::placeholder{color:#9aa6b3}
+.field input:focus, .field select:focus{
+  box-shadow:0 12px 36px rgba(25,118,184,0.06);
+  border-color:rgba(25,118,184,0.22);
+  transform:translateY(-2px);
+}
+
+/* Acciones: botones más grandes */
+.actions{
+  margin-top:10px;
+  display:flex;
+  gap:14px;
+  align-items:center;
+}
+.btn-primary{
+  background:linear-gradient(90deg,var(--green-1),var(--green-2));
+  color:#052022;
+  padding:14px 18px;     /* botón más grande */
+  border-radius:12px;
+  border:0;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 14px 36px rgba(91,176,75,0.12);
+  transition:transform .12s ease, box-shadow .12s;
+  font-size:1rem;
+}
+.btn-primary:hover{transform:translateY(-4px)}
+.btn-secondary{
+  background:transparent;
+  border:1px solid var(--glass);
+  color:var(--muted);
+  padding:12px 16px;
+  border-radius:12px;
+  font-size:0.95rem;
+}
+
+/* Footer pequeño */
+.registro-footer{margin-top:14px;font-size:0.9rem;color:#7b8995}
+
+/* Responsive: ajustar a pantallas pequeñas */
+@media (max-width:1200px){
+  :root{ --left-col: 380px } /* reducir un poco si es necesario */
+}
+@media (max-width:880px){
+  .registro-card{grid-template-columns:1fr;max-width:760px}
+  .registro-header{padding:28px}
+  .registro-form{padding:22px}
+  .grid-2{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  .registro-card{max-width:100%}
+  .registro-logo{width:92px}
+  .registro-header h1{font-size:1.05rem}
+  .field input[type="text"], .field input[type="email"], .field input[type="password"], .field select{padding:12px 14px}
+  .btn-primary{padding:12px 14px;font-size:0.95rem}
+}

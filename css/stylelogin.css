@@ -1,0 +1,102 @@
+/* --- Reset básico --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- Fondo --- */
+body {
+    background: linear-gradient(135deg, #2e86de, #38ada9);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- Contenedor principal --- */
+#page-wrapper {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    width: 350px;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* --- Logo --- */
+#page-wrapper img {
+    width: 100px;
+    margin-bottom: 20px;
+}
+
+/* --- Título --- */
+#page-wrapper h1 {
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+    color: #2e86de;
+}
+
+/* --- Inputs --- */
+.cajaentradatexto {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: 0.3s;
+}
+
+.cajaentradatexto:focus {
+    border-color: #2e86de;
+    box-shadow: 0 0 5px rgba(46, 134, 222, 0.5);
+}
+
+/* --- Select (rol) --- */
+select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 20px 0;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #f9f9f9;
+    cursor: pointer;
+}
+
+/* --- Botón --- */
+.botonenviar {
+    width: 100%;
+    padding: 12px;
+    background: #2e86de;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.botonenviar:hover {
+    background: #1b4f72;
+}
+
+/* --- Checkbox de mostrar contraseña --- */
+#mostrarC {
+    font-size: 13px;
+    margin-top: 5px;
+    color: #555;
+}
+
+/* --- Animación de aparición --- */
+#page-wrapper {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

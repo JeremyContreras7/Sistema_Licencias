@@ -1,0 +1,125 @@
+/* css/stylemenu.css
+   Paleta tomada del logo:
+   verde claro  #5bb04b
+   verde oscuro #2f7a3a
+   naranja      #f59e2f
+   amarillo     #f6d54a
+   azul         #1976b8
+   Tema: moderno, accesible y responsivo
+*/
+
+:root{
+  --green-1: #5bb04b;
+  --green-2: #2f7a3a;
+  --orange:  #f59e2f;
+  --yellow:  #f6d54a;
+  --blue:    #1976b8;
+
+  --bg: #061226;
+  --surface: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  --card-bg: #071828;
+  --muted: #cfddeb;
+  --muted-2: #98a8ba;
+  --border: rgba(255,255,255,0.04);
+  --radius: 12px;
+  --max-width: 1200px;
+  --shadow-lg: 0 18px 60px rgba(2,6,23,0.55);
+  --font: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Reset y base */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);background:linear-gradient(180deg,#041026 0%,var(--bg) 100%);color:var(--muted);-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.container{max-width:var(--max-width);margin:36px auto;padding:20px}
+
+/* Layout */
+.container{display:grid;grid-template-columns:320px 1fr;gap:22px;align-items:start}
+
+/* Sidebar */
+.sidebar{
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  box-shadow:var(--shadow-lg);
+  height:fit-content;
+}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.brand-logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(180deg,var(--green-1),var(--green-2));display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(47,122,58,0.12)}
+.brand-text strong{display:block;color:#eaf6ff;font-size:0.98rem}
+.brand-text small{color:var(--muted-2);font-size:0.85rem}
+
+/* Navigation */
+.nav-list{list-style:none;padding:6px 0;display:flex;flex-direction:column;gap:8px}
+.nav-list li a{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:var(--muted);font-weight:700;transition:all .14s ease;border:1px solid transparent;
+}
+.nav-list li a:hover{
+  transform:translateY(-4px);
+  background:linear-gradient(90deg,var(--green-1),var(--green-2));
+  color:#041617;
+  box-shadow:0 14px 36px rgba(91,176,75,0.10);
+}
+
+/* Sidebar footer */
+.sidebar-footer{margin-top:14px;border-top:1px dashed rgba(255,255,255,0.03);padding-top:12px}
+.logout{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;color:var(--muted);font-weight:700}
+.logout:hover{color:var(--orange)}
+
+/* Main */
+.main{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  min-height:480px;
+  box-shadow:0 12px 36px rgba(2,6,23,0.35);
+}
+
+/* Header inside main */
+.main-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.main-header h1{margin:0;font-size:1.15rem;color:#eaf6ff}
+.subtitle{color:var(--muted-2);font-size:0.92rem;margin-top:4px}
+
+/* Quick actions */
+.quick-actions{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;font-weight:800;cursor:pointer;border:0}
+.btn-primary{background:linear-gradient(90deg,var(--green-1),var(--green-2));color:#042022;box-shadow:0 12px 34px rgba(91,176,75,0.12)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+
+/* Cards summary */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.card{background:var(--card-bg);border-radius:10px;padding:14px;border:1px solid var(--border);box-shadow:0 10px 30px rgba(2,6,23,0.32)}
+.card h3{margin:0;color:var(--muted-2);font-size:0.95rem}
+.card .value{font-size:1.6rem;font-weight:900;color:var(--green-1);margin-top:8px}
+
+/* Content panel */
+.content-panel h2{margin:0 0 8px 0;color:#eaf6ff}
+.muted{color:var(--muted-2)}
+.table-wrap{overflow:auto;border-radius:8px;margin-top:12px}
+.table{width:100%;border-collapse:collapse;min-width:720px}
+.table thead th{text-align:left;padding:12px 10px;color:var(--muted-2);font-size:0.92rem;border-bottom:1px solid var(--border)}
+.table td{padding:12px 10px;border-bottom:1px dashed rgba(255,255,255,0.03);color:var(--muted);font-size:0.95rem}
+.table tbody tr:hover{background:rgba(255,255,255,0.02);transform:translateY(-2px)}
+
+/* Footer */
+.footer{margin-top:22px;text-align:center;color:var(--muted-2);font-size:0.9rem}
+
+/* Responsiveness */
+@media (max-width:980px){
+  .container{grid-template-columns:1fr; padding:12px}
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .table{min-width:560px}
+}
+@media (max-width:620px){
+  .cards{grid-template-columns:1fr}
+  .brand-logo{width:48px;height:48px}
+  .main{padding:16px}
+  .table{min-width:480px}
+}
+
+/* Small helpers */
+.badge{
+  display:inline-block;padding:6px 10px;border-radius:999px;font-size:0.82rem;font-weight:800;background:linear-gradient(90deg,var(--orange),var(--yellow));color:#042022
+}

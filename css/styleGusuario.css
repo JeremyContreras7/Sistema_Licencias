@@ -1,0 +1,74 @@
+:root {
+            --primary: #3b7ddd;
+            --secondary: #6c757d;
+            --success: #1cbb8c;
+            --danger: #fc5b69;
+            --warning: #f7b84b;
+            --info: #5ac1dd;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        
+        body {
+            background-color: #f5f6f8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: var(--dark);
+            border-top: none;
+        }
+        
+        .badge-admin {
+            background-color: rgba(59, 125, 221, 0.15);
+            color: var(--primary);
+        }
+        
+        .badge-encargado {
+            background-color: rgba(247, 184, 75, 0.15);
+            color: var(--warning);
+        }
+        
+        .badge-usuario {
+            background-color: rgba(28, 187, 140, 0.15);
+            color: var(--success);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #2c6ac8;
+            border-color: #2c6ac8;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            margin: 0 3px;
+            border-radius: 5px;
+        }
+        
+        .section-title {
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+            margin: 25px 0 20px;
+        }
