@@ -11,6 +11,7 @@ session_start();
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="css/stylelogin.css" />
+    <link rel="icon" href="/img/logo.png">
 </head>
 
 <body class="homepage is-preload">

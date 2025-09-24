@@ -12,6 +12,7 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "USUARIO") {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Panel Usuario</title>
     <link rel="stylesheet" href="css/stylemenu.css">
+    <link rel="icon" href="/img/logo.png">
 </head>
 <body>
   <div class="container">
@@ -27,7 +28,7 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "USUARIO") {
       <nav class="main-nav">
         <ul class="nav-list">
           <li><a href="mis_licencias.php">📑 Mis licencias</a></li>
-          <li><a href="reportar_problema.php">⚠️ Reportar problema</a></li>
+          <li><a href="foro.php">⚠️ Reportar problema</a></li>
         </ul>
       </nav>
 

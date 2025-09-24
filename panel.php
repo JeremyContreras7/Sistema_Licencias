@@ -135,6 +135,7 @@ try {
 <meta charset="utf-8">
 <title>Panel de Control - Licencias</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="/img/logo.png">
 <style>
 body { font-family: Arial, sans-serif; background:#f4f6f9; margin:0; padding:20px; color:#222; }
 .container { max-width:1100px; margin:0 auto; }
@@ -165,6 +166,39 @@ h1 { margin:0 0 10px 0; }
             <a href="logout.php"><button>Cerrar sesión</button></a>
         </div>
     </div>
+    <div class="container">
+
+    <!-- 🔎 Filtros y buscador -->
+    <div class="card">
+        <form method="get" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+            
+            <!-- Buscar por nombre equipo o software -->
+            <input type="text" name="q" placeholder="Buscar equipo o software"
+                   value="<?= htmlspecialchars($q) ?>"
+                   style="padding:8px; flex:1; border:1px solid #ccc; border-radius:6px;">
+            
+            <!-- Filtro por establecimiento (solo admin puede elegir) -->
+            <?php if ($rol === 'ADMIN'): ?>
+            <select name="establecimiento" style="padding:8px; border:1px solid #ccc; border-radius:6px;">
+                <option value="">-- Todos los establecimientos --</option>
+                <?php foreach ($establecimientos as $est): ?>
+                    <option value="<?= $est['id_establecimiento'] ?>" 
+                        <?= ($selected_est == $est['id_establecimiento']) ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($est['nombre_establecimiento']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <?php endif; ?>
+
+            <button type="submit" style="padding:8px 14px; border:none; border-radius:6px; background:#007BFF; color:#fff; cursor:pointer;">🔍 Buscar</button>
+            <a href="panel_control.php" style="text-decoration:none;">
+                <button type="button" style="padding:8px 14px; border:none; border-radius:6px; background:#6c757d; color:#fff; cursor:pointer;">
+                    ❌ Limpiar
+                </button>
+            </a>
+        </form>
+    </div>
+
 
     <?php if (!empty($errorMsg)): ?>
         <div class="card"><strong>Error:</strong> <?= htmlspecialchars($errorMsg) ?></div>

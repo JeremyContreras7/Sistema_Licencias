@@ -28,6 +28,7 @@ $licencias = $conexion->query($sql);
 <head>
     <meta charset="UTF-8">
     <title>Mis Licencias</title>
+    <link rel="icon" href="/img/logo.png">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         h1 { color: #333; }

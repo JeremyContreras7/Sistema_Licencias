@@ -43,6 +43,7 @@ $usuarios = $conexion->query("SELECT * FROM usuarios ORDER BY id_usuario DESC");
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styleGusuario.css" />
+    <link rel="icon" href="/img/logo.png">
 </head>
 <body>
     <div class="container">
@@ -83,10 +84,19 @@ $usuarios = $conexion->query("SELECT * FROM usuarios ORDER BY id_usuario DESC");
                                 <option value="USUARIO">Usuario</option>
                             </select>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="establecimiento" class="form-label">Establecimiento</label>
-                            <input type="text" class="form-control" id="establecimiento" name="establecimiento" required>
-                        </div>
+                        <div class="grid-2">
+                    <div class="field">
+                        <label for="id_establecimiento">Establecimiento</label>
+                        <select id="id_establecimiento" name="id_establecimiento" required>
+                            <option disabled selected value="">Seleccionar establecimiento</option>
+                            <?php
+                            $escuelas = $conexion->query("SELECT id_establecimiento, nombre_establecimiento FROM establecimientos");
+                            while ($row = $escuelas->fetch_assoc()) {
+                                echo "<option value='".$row['id_establecimiento']."'>".$row['nombre_establecimiento']."</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
                         <div class="col-md-6 mb-3">
                             <label for="tipo_encargado" class="form-label">Tipo de Encargado</label>
                             <select class="form-select" id="tipo_encargado" name="tipo_encargado" disabled>

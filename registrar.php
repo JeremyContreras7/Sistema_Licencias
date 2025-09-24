@@ -43,6 +43,7 @@ if (isset($_POST['btnregistrar'])) {
     <meta charset="UTF-8">
     <title>Registrar Usuario</title>
     <link rel="stylesheet" href="css/styleregistro.css">
+    <link rel="icon" href="/img/logo.png">
 </head>
 <body>
     <main class="registro-wrapper">

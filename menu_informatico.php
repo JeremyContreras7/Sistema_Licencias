@@ -11,7 +11,8 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "ENCARGADO") {
     <meta charset="UTF-8">
     <title>Panel Encargado Informático</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/stylemenu.css"> <!-- tu CSS moderno -->
+    <link rel="stylesheet" href="css/stylemenu.css">
+    <link rel="icon" href="/img/logo.png">
 </head>
 <body>
     <div class="container">
@@ -28,10 +29,10 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "ENCARGADO") {
             <nav class="main-nav">
                 <ul class="nav-list">
                     <li><a href="registrar.php">👥 Crear cuentas</a></li>
-                    <li><a href="gestionEquipos.php">🖥 Registro de equipos</a></li>
-                    <li><a href="gestionLicencias.php">📑 Registro de licencias</a></li>
-                    <li><a href="asociar_software.php">🔗 Asociar software</a></li>
-                    <li><a href="foro.php">💬 Foro</a></li>
+                    <li><a href="gestionEquipos.php">💻Registro de equipos</a></li>
+                    <li><a href="gestionLicencias.php">📋 Registro de licencias</a></li>
+                    <li><a href="gestionSoftware.php">💽 Registro de software</a></li>
+                    <li><a href="foro.php">📧 foro consulta</a></li>
                 </ul>
             </nav>
 
@@ -44,7 +45,7 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "ENCARGADO") {
         <main class="main">
             <header class="main-header">
                 <div>
-                    <h1>💻 Bienvenido, <?php echo htmlspecialchars($_SESSION['nombre']); ?></h1>
+                    <h1>👨‍💻 Bienvenido, <?php echo htmlspecialchars($_SESSION['nombre']); ?></h1>
                     <p class="subtitle">Rol: <strong>ENCARGADO</strong></p>
                 </div>
 
