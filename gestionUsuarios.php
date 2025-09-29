@@ -13,11 +13,11 @@ if (isset($_POST['crear'])) {
     $correo = $_POST['correo'];
     $pass = password_hash($_POST['pass'], PASSWORD_DEFAULT);
     $rol = $_POST['rol'];
-    $establecimiento = $_POST['establecimiento'];
     $tipo_encargado = ($_POST['rol'] === "USUARIO") ? $_POST['tipo_encargado'] : null;
+    $id_establecimiento = $_POST['id_establecimiento'];
+$sql = "INSERT INTO usuarios (nombre, correo, pass, rol, id_establecimiento, tipo_encargado) 
+        VALUES ('$nombre','$correo','$pass','$rol','$id_establecimiento','$tipo_encargado')";
 
-    $sql = "INSERT INTO usuarios (nombre, correo, pass, rol, establecimiento, tipo_encargado) 
-            VALUES ('$nombre','$correo','$pass','$rol','$establecimiento','$tipo_encargado')";
     $conexion->query($sql);
 }
 
@@ -30,8 +30,14 @@ if (isset($_GET['eliminar'])) {
 }
 
 // --- LISTAR USUARIOS ---
-// Consulta corregida para usar id_usuario en lugar de id
-$usuarios = $conexion->query("SELECT * FROM usuarios ORDER BY id_usuario DESC");
+// --- LISTAR USUARIOS ---
+$usuarios = $conexion->query("
+    SELECT u.*, e.nombre_establecimiento 
+    FROM usuarios u
+    LEFT JOIN establecimientos e ON u.id_establecimiento = e.id_establecimiento
+    ORDER BY u.id_usuario DESC
+");
+
 ?>
 
 <!DOCTYPE html>
@@ -152,7 +158,7 @@ $usuarios = $conexion->query("SELECT * FROM usuarios ORDER BY id_usuario DESC");
                                 <td><?= $row['nombre'] ?></td>
                                 <td><?= $row['correo'] ?></td>
                                 <td><span class="badge <?= $badge_class ?>"><?= $row['rol'] ?></span></td>
-                                <td><?= $row['id_establecimiento'] ?></td>
+                                <td><?= htmlspecialchars($row['nombre_establecimiento'] ?? '-') ?></td>
                                 <td><?= $row['tipo_encargado'] ?? '-' ?></td>
                                 <td><?= $row['fecha_registro'] ?></td>
                                 <td>

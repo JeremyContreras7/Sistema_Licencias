@@ -6,8 +6,15 @@
     <title>Foro de Ayuda</title>
     <link rel="stylesheet" href="css/styleForo.css">
     <link rel="icon" href="img/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <div class="back-button-container">
+        <a href="menu_informatico.php" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Volver al menú
+        </a>    
+    </div>
+    
     <div class="container">
         <div class="logo-container">
             <img src="img/logo.png" alt="Logo Institución">
@@ -19,14 +26,16 @@
         </div>
         
         <form id="contactForm" class="contact-form" method="POST" action="enviar.php">
-            <div class="form-group">
-                <label for="name">Nombre <span class="required">*</span></label>
-                <input type="text" id="name" name="name" required placeholder="Ingrese su nombre completo">
-            </div>
-            
-            <div class="form-group">
-                <label for="email">Correo Electrónico <span class="required">*</span></label>
-                <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Nombre <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" required placeholder="Ingrese su nombre completo">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Correo Electrónico <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com">
+                </div>
             </div>
             
             <div class="form-group full-width">
@@ -40,7 +49,7 @@
             </div>
             
             <div class="btn-container">
-                <button type="submit" class="btn" id="submitBtn">
+                <button type="submit" class="btn-send" id="submitBtn">
                     <span id="btnText">Enviar Mensaje</span>
                 </button>
             </div>
@@ -50,16 +59,19 @@
         
         <div class="contact-info">
             <div class="info-item">
-                <div class="info-icon">📧</div>
+                <div class="info-icon"><i class="fas fa-envelope"></i></div>
                 <p>informatica@demovalle.com</p>
             </div>
             <div class="info-item">
-                <div class="info-icon">📞</div>
-                <p>+56 9 1234 5678</p>
+                <div class="info-icon"><i class="fas fa-clock"></i></div>
+                <div class="schedule">
+                    <p>Lunes a jueves: 8:00 - 17:30</p>
+                    <p>Viernes: 8:00 - 14:00</p>
+                </div>
             </div>
             <div class="info-item">
-                <div class="info-icon">⏰</div>
-                <p>Lun-Vie: 8:00 - 17:30</p>
+                <div class="info-icon"><i class="fas fa-phone"></i></div>
+                <p>+56 9 1234 5678</p>
             </div>
         </div>
     </div>

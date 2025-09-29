@@ -25,9 +25,9 @@ if (isset($_POST['btnregistrar'])) {
         $stmt->bind_param("ssssis", $nombre, $correo, $pass, $rol, $id_establecimiento, $tipo_encargado);
 
         if ($stmt->execute()) {
-            echo "<script>alert('✅ Usuario registrado correctamente.'); window.location='index.php';</script>";
+            echo "<script>alert('✅ Usuario registrado correctamente.'); window.location='registrar.php';</script>";
         } else {
-            echo "<script>alert('❌ Error al registrar el usuario.'); window.location='registrar_usuario.php';</script>";
+            echo "<script>alert('❌ Error al registrar el usuario.'); window.location='registrar.php';</script>";
         }
 
         $stmt->close();
@@ -77,8 +77,6 @@ if (isset($_POST['btnregistrar'])) {
                         <label for="rol">Rol</label>
                         <select id="rol" name="rol" required onchange="toggleEncargado()">
                             <option disabled selected value="">Seleccionar rol</option>
-                            <option value="ADMIN">Administrador</option>
-                            <option value="ENCARGADO">Encargado Informático</option>
                             <option value="USUARIO">Personal Escolar</option>
                         </select>
                     </div>

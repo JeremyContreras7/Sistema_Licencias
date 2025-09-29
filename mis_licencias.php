@@ -4,87 +4,114 @@ if (!isset($_SESSION['rol'])) {
     header("Location: index.php");
     exit();
 }
-
 include("conexion.php");
-
-// Obtener ID del establecimiento desde la sesión
 $id_establecimiento = $_SESSION['id_establecimiento'];
 
-// Consulta: Licencias de los equipos del establecimiento del usuario
 $sql = "
-    SELECT l.id_licencia, e.nombre_equipo, s.nombre_software, s.version, 
-           l.fecha_inicio, l.fecha_vencimiento, s.es_critico, est.nombre_establecimiento
-    FROM licencias l
-    INNER JOIN equipos e ON l.id_equipo = e.id_equipo
-    INNER JOIN software s ON l.id_software = s.id_software
-    INNER JOIN establecimientos est ON e.id_establecimiento = est.id_establecimiento
-    WHERE e.id_establecimiento = $id_establecimiento
+  SELECT l.id_licencia, e.nombre_equipo, s.nombre_software, s.version,
+         l.fecha_inicio, l.fecha_vencimiento, s.es_critico
+  FROM licencias l
+  INNER JOIN equipos e ON l.id_equipo = e.id_equipo
+  INNER JOIN software s ON l.id_software = s.id_software
+  WHERE e.id_establecimiento = ?
+  ORDER BY l.fecha_vencimiento ASC
 ";
-$licencias = $conexion->query($sql);
+$stmt = $conexion->prepare($sql);
+$stmt->bind_param("i", $id_establecimiento);
+$stmt->execute();
+$licencias = $stmt->get_result();
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Mis Licencias</title>
-    <link rel="icon" href="/img/logo.png">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        th { background: #f4f4f4; }
-        .critico { color: red; font-weight: bold; }
-        .alerta { background: #ffcccc; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Mis Licencias</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Normalize y Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="css/styleLicencia.css">
+  <link rel="icon" href="img/logo.png">
 </head>
 <body>
-    <h1>🔑 Mis Licencias (<?= $_SESSION['nombre'] ?> - <?= $_SESSION['rol'] ?>)</h1>
-    <a href="menu.php">⬅ Volver al menú</a>
+  <div class="container">
+    <header class="page-header">
+      <h1>🔑 Mis Licencias</h1>
+      <div class="user-info">
+        <span><?= htmlspecialchars($_SESSION['nombre']) ?></span>
+        <span class="badge"><?= htmlspecialchars($_SESSION['rol']) ?></span>
+      </div>
+    </header>
 
-    <table>
-        <tr>
+    <div class="top-bar">
+      <a href="menu_funcionario.php" class="btn-back">⬅ Volver al menú</a>
+      <input type="text" id="search" class="search" placeholder="Buscar licencia…">
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
             <th>ID</th>
             <th>Equipo</th>
             <th>Software</th>
             <th>Versión</th>
-            <th>Fecha Inicio</th>
-            <th>Fecha Vencimiento</th>
+            <th>Inicio</th>
+            <th>Vencimiento</th>
             <th>Estado</th>
             <th>Crítico</th>
-        </tr>
-        <?php if ($licencias->num_rows > 0): ?>
-            <?php while($row = $licencias->fetch_assoc()): ?>
-                <?php
-                    $hoy = date("Y-m-d");
-                    $estado = "";
-                    $clase = "";
-
-                    if ($row['fecha_vencimiento'] < $hoy) {
-                        $estado = "❌ Vencida";
-                        $clase = "alerta";
-                    } elseif ($row['fecha_vencimiento'] <= date("Y-m-d", strtotime("+30 days"))) {
-                        $estado = "⚠️ Por vencer";
-                        $clase = "alerta";
-                    } else {
-                        $estado = "✅ Vigente";
-                    }
-                ?>
-                <tr class="<?= $clase ?>">
-                    <td><?= $row['id_licencia'] ?></td>
-                    <td><?= $row['nombre_equipo'] ?></td>
-                    <td><?= $row['nombre_software'] ?></td>
-                    <td><?= $row['version'] ?></td>
-                    <td><?= $row['fecha_inicio'] ?></td>
-                    <td><?= $row['fecha_vencimiento'] ?></td>
-                    <td><?= $estado ?></td>
-                    <td><?= $row['es_critico'] ? '<span class="critico">Sí</span>' : 'No' ?></td>
-                </tr>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if ($licencias->num_rows): ?>
+            <?php while ($row = $licencias->fetch_assoc()): ?>
+              <?php
+              $hoy = date("Y-m-d");
+              $fven = $row['fecha_vencimiento'];
+              if ($fven < $hoy) {
+                $estado = 'vencida';
+                $texto = '❌ Vencida';
+              } elseif ($fven <= date("Y-m-d", strtotime("+30 days"))) {
+                $estado = 'por-vencer';
+                $texto = '⚠️ Por vencer';
+              } else {
+                $estado = 'vigente';
+                $texto = '✅ Vigente';
+              }
+              ?>
+              <tr>
+                <td><?= $row['id_licencia'] ?></td>
+                <td><?= htmlspecialchars($row['nombre_equipo']) ?></td>
+                <td><?= htmlspecialchars($row['nombre_software']) ?></td>
+                <td><?= htmlspecialchars($row['version']) ?></td>
+                <td><?= $row['fecha_inicio'] ?></td>
+                <td><?= $fven ?></td>
+                <td><span class="badge status <?= $estado ?>"><?= $texto ?></span></td>
+                <td>
+                  <?= $row['es_critico']
+                    ? '<span class="badge critico">Sí</span>'
+                    : '<span class="badge normal">No</span>' ?>
+                </td>
+              </tr>
             <?php endwhile; ?>
-        <?php else: ?>
-            <tr><td colspan="8">No hay licencias registradas para tu establecimiento</td></tr>
-        <?php endif; ?>
-    </table>
+          <?php else: ?>
+            <tr>
+              <td colspan="8" class="no-data">No hay licencias registradas</td>
+            </tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('search').addEventListener('input', function(e) {
+      const term = e.target.value.toLowerCase();
+      document.querySelectorAll('tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+      });
+    });
+  </script>
 </body>
 </html>

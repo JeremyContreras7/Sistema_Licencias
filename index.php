@@ -43,10 +43,6 @@ session_start();
 
                 <button type="submit" class="botonenviar" name="btnloginx">Iniciar Sesión</button>
             </form>
-
-            <!-- Botón para ir a Registro -->
-            <p style="margin-top: 15px;">¿No tienes cuenta?</p>
-            <a href="registrar.php" class="botonregistro">Crear una cuenta</a>
         </center>
     </div>
 
