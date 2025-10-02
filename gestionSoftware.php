@@ -40,6 +40,10 @@ $software = $conexion->query("
     WHERE s.id_establecimiento = $id_establecimiento
     ORDER BY s.id_software DESC
 ");
+
+// Contar software para estadísticas
+$total_software = $software->num_rows;
+$software_critico = $conexion->query("SELECT COUNT(*) as count FROM software WHERE id_establecimiento = $id_establecimiento AND es_critico = 1")->fetch_assoc()['count'];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -47,76 +51,207 @@ $software = $conexion->query("
     <meta charset="UTF-8">
     <title>Gestión de Software</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="css/styleequipos.css">
+    <link rel="stylesheet" href="css/style_software.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="/img/logo.png">
 </head>
 <body>
     <div class="page">
-        <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-            <div>
-                <h1>📦 Gestión de Software</h1>
-                <p style="color:#66788b;margin-top:6px">Registra y administra el software disponible en tu establecimiento</p>
-            </div>
-            <div style="display:flex;gap:10px;align-items:center">
-                <a class="back" href="menu.php">⬅ Volver al menú</a>
-                <span class="badge">Encargado: <?php echo htmlspecialchars($_SESSION['nombre'] ?? '—'); ?></span>
+        <!-- Header Mejorado -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1><i class="fas fa-boxes"></i> Gesti&oacute;n de Software</h1>
+                    <p>Registra y administra el software disponible en tu establecimiento</p>
+                </div>
+                <div class="header-actions">
+                    <a class="back-btn" href="menu.php">
+                        <i class="fas fa-arrow-left"></i> Volver al Men&uacute;
+                    </a>
+                    <div class="user-badge">
+                        <i class="fas fa-user-cog"></i>
+                        Encargado: <?php echo htmlspecialchars($_SESSION['nombre'] ?? '—'); ?>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <!-- FORMULARIO CREAR -->
+        <!-- Tarjetas de Estadísticas -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="number"><?php echo $total_software; ?></div>
+                <div class="label">Total de Software</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="color: var(--danger);"><?php echo $software_critico; ?></div>
+                <div class="label">Software Crítico</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="color: var(--success);"><?php echo $total_software - $software_critico; ?></div>
+                <div class="label">Software Normal</div>
+            </div>
+        </div>
+
+        <!-- Formulario de Registro -->
         <section class="form-card">
-            <h2>➕ Registrar Software</h2>
+            <h2><i class="fas fa-plus-circle"></i> Registrar Nuevo Software</h2>
             <form method="POST" action="">
-                <div class="field">
-                    <label for="nombre_software">Nombre del Software</label>
-                    <input id="nombre_software" type="text" name="nombre_software" required>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="nombre_software">
+                            <i class="fas fa-cube"></i> Nombre del Software
+                        </label>
+                        <input id="nombre_software" type="text" name="nombre_software" 
+                               placeholder="Ej: Microsoft Office, Adobe Photoshop, AutoCAD" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="version">
+                            <i class="fas fa-code-branch"></i> Versión
+                        </label>
+                        <input id="version" type="text" name="version" 
+                               placeholder="Ej: 2023, 2.0, Professional Edition">
+                    </div>
+
+                    <div class="field">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="es_critico" name="es_critico" value="1">
+                            <label for="es_critico">
+                                <i class="fas fa-exclamation-triangle"></i> Marcar como software crítico
+                            </label>
+                        </div>
+                        <small style="color: var(--gray-600); margin-top: 8px; display: block;">
+                            El software crítico requiere atención prioritaria y licencias siempre activas.
+                        </small>
+                    </div>
                 </div>
-                <div class="field">
-                    <label for="version">Versión</label>
-                    <input id="version" type="text" name="version">
+
+                <div class="btn-group">
+                    <button type="submit" name="crear" class="btn-primary">
+                        <i class="fas fa-save"></i> Registrar Software
+                    </button>
+                    <a href="gestionSoftware.php" class="btn-outline">
+                        <i class="fas fa-broom"></i> Limpiar Formulario
+                    </a>
                 </div>
-                <div class="field">
-                    <label><input type="checkbox" name="es_critico" value="1"> Marcar como crítico</label>
-                </div>
-                <button type="submit" name="crear">Registrar</button>
             </form>
         </section>
 
-        <!-- LISTADO -->
-        <section style="margin-top:22px">
-            <h2>📋 Lista de Software Registrado</h2>
-            <div class="table-wrap">
+        <!-- Lista de Software -->
+        <section class="table-container">
+            <div class="table-header">
+                <h2 class="section-title">
+                    <i class="fas fa-list"></i> Software Registrado
+                </h2>
+                <div class="count-badge">
+                    <i class="fas fa-box"></i> <?php echo $total_software; ?> programas
+                </div>
+            </div>
+
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Nombre</th>
                             <th>Versión</th>
-                            <th>Crítico</th>
-                            <th>Acciones</th>
+                            <th class="center">Estado</th>
+                            <th class="center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if ($software && $software->num_rows > 0): ?>
                             <?php while($row = $software->fetch_assoc()): ?>
                                 <tr>
-                                    <td><?= $row['id_software'] ?></td>
-                                    <td><?= htmlspecialchars($row['nombre_software']) ?></td>
-                                    <td><?= htmlspecialchars($row['version']) ?></td>
-                                    <td><?= $row['es_critico'] ? "✅ Sí" : "❌ No" ?></td>
+                                    <td><strong>#<?= $row['id_software'] ?></strong></td>
                                     <td>
-                                        <a href="editar_software.php?id=<?= $row['id_software'] ?>">✏️ Editar</a>
-                                        <a href="gestionSoftware.php?eliminar=<?= $row['id_software'] ?>" onclick="return confirm('¿Eliminar este software?')">🗑 Eliminar</a>
+                                        <i class="fas fa-cube" style="color: var(--primary); margin-right: 10px;"></i>
+                                        <strong><?= htmlspecialchars($row['nombre_software']) ?></strong>
+                                    </td>
+                                    <td>
+                                        <?php if (!empty($row['version'])): ?>
+                                            <span style="background: var(--gray-100); padding: 4px 8px; border-radius: 6px; font-family: monospace;">
+                                                v<?= htmlspecialchars($row['version']) ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span style="color: var(--gray-500);">—</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="center">
+                                        <?php if ($row['es_critico']): ?>
+                                            <span class="badge-critical">
+                                                <i class="fas fa-exclamation-triangle"></i> Crítico
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="badge-normal">
+                                                <i class="fas fa-check-circle"></i> Normal
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="center actions">
+                                        <a href="editar_software.php?id=<?= $row['id_software'] ?>" class="btn-edit">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                        <a href="gestionSoftware.php?eliminar=<?= $row['id_software'] ?>" class="btn-delete" onclick="return confirm('¿Estás seguro de eliminar este software?\n\nEsta acción no se puede deshacer.')">
+                                            <i class="fas fa-trash"></i> Eliminar
+                                        </a>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
                         <?php else: ?>
-                            <tr><td colspan="5">No hay software registrado en tu establecimiento</td></tr>
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    <i class="fas fa-box-open"></i>
+                                    <p>No hay software registrado</p>
+                                    <p class="subtext">Comienza agregando el primer software utilizando el formulario superior.</p>
+                                </td>
+                            </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </section>
     </div>
+
+    <script>
+        // Mejoras de interacción
+        document.addEventListener('DOMContentLoaded', function() {
+            // Efecto de carga en el botón de enviar
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.classList.add('btn-loading');
+                        submitBtn.innerHTML = '<i class="fas fa-spinner"></i> Registrando...';
+                    }
+                });
+            });
+
+            // Confirmación mejorada para eliminación
+            const deleteLinks = document.querySelectorAll('.btn-delete');
+            deleteLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!confirm('⚠️ ¿Estás seguro de eliminar este software?\n\nEsta acción eliminará permanentemente el registro.')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+
+            // Efecto visual en el checkbox crítico
+            const criticoCheckbox = document.getElementById('es_critico');
+            const criticoLabel = criticoCheckbox.closest('.checkbox-group');
+            
+            criticoCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    criticoLabel.style.borderColor = 'var(--danger)';
+                    criticoLabel.style.background = 'rgba(239, 68, 68, 0.05)';
+                } else {
+                    criticoLabel.style.borderColor = 'var(--gray-300)';
+                    criticoLabel.style.background = 'var(--gray-100)';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

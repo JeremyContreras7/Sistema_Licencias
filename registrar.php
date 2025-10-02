@@ -1,13 +1,29 @@
 <?php
+session_start();
+if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "ENCARGADO") {
+    header("Location: index.php");
+    exit();
+}
+
 include("conexion.php");
+
+$id_establecimiento = $_SESSION['id_establecimiento']; // viene del login del encargado
+$nombre_establecimiento = "";
+
+// Obtener el nombre del establecimiento del encargado
+$stmt = $conexion->prepare("SELECT nombre_establecimiento FROM establecimientos WHERE id_establecimiento = ?");
+$stmt->bind_param("i", $id_establecimiento);
+$stmt->execute();
+$stmt->bind_result($nombre_establecimiento);
+$stmt->fetch();
+$stmt->close();
 
 if (isset($_POST['btnregistrar'])) {
     $nombre = $_POST['nombre'];
     $correo = $_POST['correo'];
     $pass = password_hash($_POST['pass'], PASSWORD_DEFAULT);
-    $rol = $_POST['rol'];
-    $id_establecimiento = $_POST['id_establecimiento']; // FK con tabla establecimientos
-    $tipo_encargado = ($rol === "USUARIO") ? $_POST['tipo_encargado'] : null;
+    $rol = "USUARIO"; // fijo solo funcionario escolar
+    $tipo_encargado = $_POST['tipo_encargado'] ?? null;
 
     // Verificar si el correo ya existe
     $check = $conexion->prepare("SELECT id_usuario FROM usuarios WHERE correo = ?");
@@ -16,7 +32,7 @@ if (isset($_POST['btnregistrar'])) {
     $check->store_result();
 
     if ($check->num_rows > 0) {
-        echo "<script>alert('❌ El correo ya está registrado.'); window.location='registrar_usuario.php';</script>";
+        echo "<script>alert('❌ El correo ya está registrado.'); window.location='registrar.php';</script>";
     } else {
         // Insertar nuevo usuario
         $stmt = $conexion->prepare("INSERT INTO usuarios 
@@ -50,8 +66,8 @@ if (isset($_POST['btnregistrar'])) {
         <section class="registro-card">
             <header class="registro-header">
                 <img src="img/logo.png" alt="Logo" class="registro-logo">
-                <h1>Registrar Nuevo Usuario</h1>
-                <p class="registro-sub">Crea cuentas para el sistema de gestión</p>
+                <h1>Registrar Funcionario Escolar</h1>
+                <p class="registro-sub">Crea cuentas de funcionarios para tu establecimiento</p>
             </header>
 
             <form class="registro-form" method="POST" action="">
@@ -67,46 +83,31 @@ if (isset($_POST['btnregistrar'])) {
                     </div>
                 </div>
 
-                <div class="grid-2">
-                    <div class="field">
-                        <label for="pass">Contraseña</label>
-                        <input id="pass" type="password" name="pass" placeholder="Mínimo 8 caracteres" required>
-                    </div>
-
-                    <div class="field">
-                        <label for="rol">Rol</label>
-                        <select id="rol" name="rol" required onchange="toggleEncargado()">
-                            <option disabled selected value="">Seleccionar rol</option>
-                            <option value="USUARIO">Personal Escolar</option>
-                        </select>
-                    </div>
-                </div>
+                <!-- El rol ya está fijo como USUARIO -->
+                <input type="hidden" name="rol" value="USUARIO">
 
                 <div class="grid-2">
                     <div class="field">
                         <label for="id_establecimiento">Establecimiento</label>
-                        <select id="id_establecimiento" name="id_establecimiento" required>
-                            <option disabled selected value="">Seleccionar establecimiento</option>
-                            <?php
-                            $escuelas = $conexion->query("SELECT id_establecimiento, nombre_establecimiento FROM establecimientos");
-                            while ($row = $escuelas->fetch_assoc()) {
-                                echo "<option value='".$row['id_establecimiento']."'>".$row['nombre_establecimiento']."</option>";
-                            }
-                            ?>
-                        </select>
+                        <input type="text" value="<?= htmlspecialchars($nombre_establecimiento) ?>" disabled>
+                        <input type="hidden" name="id_establecimiento" value="<?= $id_establecimiento ?>">
                     </div>
 
                     <div class="field">
-                        <label for="tipo_encargado">Tipo de encargado</label>
-                        <select id="tipo_encargado" name="tipo_encargado" disabled>
-                            <option disabled selected value="">Tipo de encargado</option>
-                            <option value="INFORMATICA">Informática</option>
+                        <label for="tipo_encargado">Tipo de funcionario</label>
+                        <select id="tipo_encargado" name="tipo_encargado" required>
+                            <option disabled selected value="">Seleccionar tipo</option>
                             <option value="ACADEMICA">Académica</option>
                             <option value="ADMINISTRATIVA">Administrativa</option>
                             <option value="DIRECCION">Dirección</option>
                             <option value="CONVIVENCIA">Convivencia Escolar</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="field">
+                    <label for="pass">Contraseña</label>
+                    <input id="pass" type="password" name="pass" placeholder="Mínimo 8 caracteres" required>
                 </div>
 
                 <div class="actions">
@@ -120,22 +121,5 @@ if (isset($_POST['btnregistrar'])) {
             </footer>
         </section>
     </main>
-
-    <script>
-        function toggleEncargado() {
-            let rol = document.getElementById("rol").value;
-            let encargadoSelect = document.getElementById("tipo_encargado");
-
-            if (rol === "USUARIO") {
-                encargadoSelect.disabled = false;
-                encargadoSelect.required = true;
-            } else {
-                encargadoSelect.disabled = true;
-                encargadoSelect.required = false;
-                encargadoSelect.selectedIndex = 0;
-            }
-        }
-    </script>
 </body>
-
 </html>

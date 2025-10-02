@@ -60,7 +60,7 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "USUARIO") {
           <div class="card-icon">⚠️</div>
           <h3>Reportar problema</h3>
           <p>Notifica cualquier inconveniente que tengas.</p>
-          <a href="reportar_problema.php" class="btn">Enviar reporte</a>
+          <a href="foro.php" class="btn">Enviar reporte</a>
         </div>
       </section>
 

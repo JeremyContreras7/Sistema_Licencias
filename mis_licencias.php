@@ -5,22 +5,27 @@ if (!isset($_SESSION['rol'])) {
     exit();
 }
 include("conexion.php");
+
+// Obtenemos el usuario actual y su establecimiento
+$id_usuario = $_SESSION['id_usuario'];
 $id_establecimiento = $_SESSION['id_establecimiento'];
 
+// Consulta: solo licencias asignadas al usuario actual
 $sql = "
   SELECT l.id_licencia, e.nombre_equipo, s.nombre_software, s.version,
          l.fecha_inicio, l.fecha_vencimiento, s.es_critico
   FROM licencias l
   INNER JOIN equipos e ON l.id_equipo = e.id_equipo
   INNER JOIN software s ON l.id_software = s.id_software
-  WHERE e.id_establecimiento = ?
+  WHERE e.id_establecimiento = ? AND l.id_usuario = ?
   ORDER BY l.fecha_vencimiento ASC
 ";
 $stmt = $conexion->prepare($sql);
-$stmt->bind_param("i", $id_establecimiento);
+$stmt->bind_param("ii", $id_establecimiento, $id_usuario);
 $stmt->execute();
 $licencias = $stmt->get_result();
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>

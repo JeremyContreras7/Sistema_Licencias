@@ -103,7 +103,6 @@ AND $where
 LIMIT 200
 ";
 
-
 // función auxiliar para ejecutar consultas con parámetros
 function ejecutarConsulta($conexion, $sql, $types, $params) {
     $stmt = $conexion->prepare($sql);
@@ -135,135 +134,333 @@ try {
 <meta charset="utf-8">
 <title>Panel de Control - Licencias</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="css/stylePanel.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="icon" href="/img/logo.png">
-<style>
-body { font-family: Arial, sans-serif; background:#f4f6f9; margin:0; padding:20px; color:#222; }
-.container { max-width:1100px; margin:0 auto; }
-.header { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-h1 { margin:0 0 10px 0; }
-.card { background:#fff; border-radius:8px; padding:15px; box-shadow:0 4px 10px rgba(0,0,0,0.06); margin-bottom:15px; }
-.table { width:100%; border-collapse:collapse; }
-.table th, .table td { padding:8px; border-bottom:1px solid #eee; text-align:left; }
-.small { font-size:0.9rem; color:#666; }
-.empty { color:#666; font-style:italic; }
-.badge { display:inline-block; padding:6px 10px; border-radius:999px; font-weight:bold; font-size:0.9rem; }
-.badge.red { background:#dc3545; color:#fff; }
-.badge.yellow { background:#ffc107; color:#333; }
-.badge.orange { background:#fd7e14; color:#fff; }
-.info-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
-.info { padding:8px 12px; background:#f8f9fa; border-radius:8px; }
-</style>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <div>
-            <h1>📊 Panel de Control - Licencias</h1>
-            <p class="small">Usuario: <?= htmlspecialchars($_SESSION['nombre'] ?? '') ?> — Rol: <?= htmlspecialchars($rol) ?></p>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-text">
+                <h1><i class="fas fa-tachometer-alt"></i> Panel de Control</h1>
+                <div class="user-info">
+                    <i class="fas fa-user"></i> <?= htmlspecialchars($_SESSION['nombre'] ?? '') ?> 
+                    — <i class="fas fa-shield-alt"></i> <?= htmlspecialchars($rol) ?>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="menu.php" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Volver al Menú
+                </a>
+                <a href="logout.php" class="btn btn-primary">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </a>
+            </div>
         </div>
-        <div>
-            <a href="menu.php"><button>← Volver</button></a>
-            <a href="logout.php"><button>Cerrar sesión</button></a>
-        </div>
-    </div>
-    <div class="container">
+    </header>
 
-    <!-- 🔎 Filtros y buscador -->
-    <div class="card">
-        <form method="get" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+    <!-- Filtros -->
+    <div class="filter-card">
+        <form method="get" class="filter-form">
+            <div class="form-group">
+                <label for="search"><i class="fas fa-search"></i> Buscar</label>
+                <input type="text" id="search" name="q" class="form-control" 
+                       placeholder="Buscar equipo o software..." value="<?= htmlspecialchars($q) ?>">
+            </div>
             
-            <!-- Buscar por nombre equipo o software -->
-            <input type="text" name="q" placeholder="Buscar equipo o software"
-                   value="<?= htmlspecialchars($q) ?>"
-                   style="padding:8px; flex:1; border:1px solid #ccc; border-radius:6px;">
-            
-            <!-- Filtro por establecimiento (solo admin puede elegir) -->
             <?php if ($rol === 'ADMIN'): ?>
-            <select name="establecimiento" style="padding:8px; border:1px solid #ccc; border-radius:6px;">
-                <option value="">-- Todos los establecimientos --</option>
-                <?php foreach ($establecimientos as $est): ?>
-                    <option value="<?= $est['id_establecimiento'] ?>" 
-                        <?= ($selected_est == $est['id_establecimiento']) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($est['nombre_establecimiento']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+            <div class="form-group">
+                <label for="establecimiento"><i class="fas fa-school"></i> Establecimiento</label>
+                <select id="establecimiento" name="establecimiento" class="form-control">
+                    <option value="">Todos los establecimientos</option>
+                    <?php foreach ($establecimientos as $est): ?>
+                        <option value="<?= $est['id_establecimiento'] ?>" 
+                            <?= ($selected_est == $est['id_establecimiento']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($est['nombre_establecimiento']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
             <?php endif; ?>
 
-            <button type="submit" style="padding:8px 14px; border:none; border-radius:6px; background:#007BFF; color:#fff; cursor:pointer;">🔍 Buscar</button>
-            <a href="panel_control.php" style="text-decoration:none;">
-                <button type="button" style="padding:8px 14px; border:none; border-radius:6px; background:#6c757d; color:#fff; cursor:pointer;">
-                    ❌ Limpiar
-                </button>
+            <button type="submit" class="btn-search">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            <a href="panel_control.php" class="btn-clear">
+                <i class="fas fa-times"></i> Limpiar
             </a>
         </form>
     </div>
 
-
     <?php if (!empty($errorMsg)): ?>
-        <div class="card"><strong>Error:</strong> <?= htmlspecialchars($errorMsg) ?></div>
+        <div class="alert-card" style="border-left-color: var(--danger);">
+            <div class="alert-header">
+                <div class="alert-icon" style="background: rgba(252, 91, 105, 0.1); color: var(--danger);">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>Error del Sistema</h3>
+            </div>
+            <p><?= htmlspecialchars($errorMsg) ?></p>
+        </div>
     <?php endif; ?>
 
-    <div class="card info-row">
-        <div class="info"><span class="badge red"><?= count($vencidas) ?></span> Licencias vencidas</div>
-        <div class="info"><span class="badge yellow"><?= count($proximas) ?></span> Próximas (30 días)</div>
-        <div class="info"><span class="badge orange"><?= count($criticos) ?></span> Crítico sin licencia</div>
+    <!-- Estadísticas -->
+    <div class="stats-container">
+        <div class="stat-card vencidas">
+            <div class="stat-number"><?= count($vencidas) ?></div>
+            <div class="stat-label">
+                <i class="fas fa-exclamation-triangle"></i>
+                Licencias Vencidas
+            </div>
+        </div>
+        <div class="stat-card proximas">
+            <div class="stat-number"><?= count($proximas) ?></div>
+            <div class="stat-label">
+                <i class="fas fa-clock"></i>
+                Próximas a Vencer
+            </div>
+        </div>
+        <div class="stat-card criticos">
+            <div class="stat-number"><?= count($criticos) ?></div>
+            <div class="stat-label">
+                <i class="fas fa-bug"></i>
+                Críticos sin Licencia
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        <h3>🚨 Licencias vencidas</h3>
+    <!-- Licencias Vencidas -->
+    <div class="alert-card vencidas">
+        <div class="alert-header">
+            <div class="alert-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3>Licencias Vencidas</h3>
+            <span class="status-badge badge-danger"><?= count($vencidas) ?> registros</span>
+        </div>
+        
         <?php if ($vencidas): ?>
-            <table class="table">
-                <tr><th>Equipo</th><th>Software</th><th>Versión</th><th>Vencimiento</th><th>Escuela</th></tr>
-                <?php foreach ($vencidas as $r): ?>
-                <tr>
-                    <td><?= htmlspecialchars($r['nombre_equipo']) ?></td>
-                    <td><?= htmlspecialchars($r['nombre_software']) ?></td>
-                    <td><?= htmlspecialchars($r['version']) ?></td>
-                    <td><?= htmlspecialchars($r['fecha_vencimiento']) ?></td>
-                    <td><?= htmlspecialchars($r['establecimiento']) ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-        <?php else: ?><p class="empty">No hay licencias vencidas.</p><?php endif; ?>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Equipo</th>
+                            <th>Software</th>
+                            <th>Versión</th>
+                            <th>Vencimiento</th>
+                            <th>Establecimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($vencidas as $r): ?>
+                        <tr>
+                            <td>
+                                <i class="fas fa-desktop" style="color: var(--primary); margin-right: 8px;"></i>
+                                <?= htmlspecialchars($r['nombre_equipo']) ?>
+                            </td>
+                            <td>
+                                <i class="fas fa-cube" style="color: var(--info); margin-right: 8px;"></i>
+                                <?= htmlspecialchars($r['nombre_software']) ?>
+                            </td>
+                            <td>
+                                <span class="status-badge" style="background: var(--gray-200); color: var(--gray-700);">
+                                    <?= htmlspecialchars($r['version']) ?>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge badge-danger">
+                                    <i class="fas fa-calendar-times"></i>
+                                    <?= htmlspecialchars($r['fecha_vencimiento']) ?>
+                                </span>
+                            </td>
+                            <td>
+                                <i class="fas fa-school" style="color: var(--secondary); margin-right: 8px;"></i>
+                                <?= htmlspecialchars($r['establecimiento']) ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <div class="empty-state">
+                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                <p>No hay licencias vencidas</p>
+                <p style="font-size: 0.9rem; color: var(--gray-600); margin-top: 8px;">
+                    ¡Excelente! Todas las licencias están al día.
+                </p>
+            </div>
+        <?php endif; ?>
     </div>
 
-    <div class="card">
-        <h3>⚠️ Próximas a vencer</h3>
+    <!-- Próximas a Vencer -->
+    <div class="alert-card proximas">
+        <div class="alert-header">
+            <div class="alert-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3>Próximas a Vencer (30 días)</h3>
+            <span class="status-badge badge-warning"><?= count($proximas) ?> registros</span>
+        </div>
+        
         <?php if ($proximas): ?>
-            <table class="table">
-                <tr><th>Equipo</th><th>Software</th><th>Versión</th><th>Días</th><th>Fecha</th><th>Escuela</th></tr>
-                <?php foreach ($proximas as $r): ?>
-                <tr>
-                    <td><?= htmlspecialchars($r['nombre_equipo']) ?></td>
-                    <td><?= htmlspecialchars($r['nombre_software']) ?></td>
-                    <td><?= htmlspecialchars($r['version']) ?></td>
-                    <td><?= htmlspecialchars($r['dias_restantes']) ?></td>
-                    <td><?= htmlspecialchars($r['fecha_vencimiento']) ?></td>
-                    <td><?= htmlspecialchars($r['establecimiento']) ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-        <?php else: ?><p class="empty">No hay licencias próximas a vencer.</p><?php endif; ?>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Equipo</th>
+                            <th>Software</th>
+                            <th>Versión</th>
+                            <th>Días Restantes</th>
+                            <th>Fecha Vencimiento</th>
+                            <th>Establecimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($proximas as $r): 
+                            $dias = $r['dias_restantes'];
+                            $badgeClass = $dias <= 7 ? 'badge-danger' : 'badge-warning';
+                        ?>
+                        <tr>
+                            <td>
+                                <i class="fas fa-desktop" style="color: var(--primary); margin-right: 8px;"></i>
+                                <?= htmlspecialchars($r['nombre_equipo']) ?>
+                            </td>
+                            <td>
+                                <i class="fas fa-cube" style="color: var(--info); margin-right: 8px;"></i>
+                                <?= htmlspecialchars($r['nombre_software']) ?>
+                            </td>
+                            <td>
+                                <span class="status-badge" style="background: var(--gray-200); color: var(--gray-700);">
+                                    <?= htmlspecialchars($r['version']) ?>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge <?= $badgeClass ?>">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    <?= $dias ?> días
+                                </span>
+                            </td>
+                            <td><?= htmlspecialchars($r['fecha_vencimiento']) ?></td>
+                            <td>
+                                <i class="fas fa-school" style="color: var(--secondary); margin-right: 8px;"></i>
+                                <?= htmlspecialchars($r['establecimiento']) ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <div class="empty-state">
+                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                <p>No hay licencias próximas a vencer</p>
+            </div>
+        <?php endif; ?>
     </div>
 
-    <div class="card">
-        <h3>🔴 Críticos sin licencia válida</h3>
+    <!-- Críticos sin Licencia -->
+    <div class="alert-card criticos">
+        <div class="alert-header">
+            <div class="alert-icon">
+                <i class="fas fa-bug"></i>
+            </div>
+            <h3>Software Crítico sin Licencia Válida</h3>
+            <span class="status-badge badge-info"><?= count($criticos) ?> registros</span>
+        </div>
+        
         <?php if ($criticos): ?>
-            <table class="table">
-                <tr><th>Equipo</th><th>Software</th><th>Versión</th><th>Últ. vencimiento</th><th>Escuela</th></tr>
-                <?php foreach ($criticos as $r): ?>
-                <tr>
-                    <td><?= htmlspecialchars($r['nombre_equipo']) ?></td>
-                    <td><?= htmlspecialchars($r['nombre_software']) ?></td>
-                    <td><?= htmlspecialchars($r['version']) ?></td>
-                    <td><?= htmlspecialchars($r['fecha_ult_venc'] ?? 'N/A') ?></td>
-                    <td><?= htmlspecialchars($r['establecimiento']) ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-        <?php else: ?><p class="empty">Todo el software crítico tiene licencias válidas.</p><?php endif; ?>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Equipo</th>
+                            <th>Software</th>
+                            <th>Versión</th>
+                            <th>Último Vencimiento</th>
+                            <th>Establecimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($criticos as $r): ?>
+                        <tr>
+                            <td>
+                                <i class="fas fa-desktop" style="color: var(--primary); margin-right: 8px;"></i>
+                                <?= htmlspecialchars($r['nombre_equipo']) ?>
+                            </td>
+                            <td>
+                                <i class="fas fa-cube" style="color: var(--info); margin-right: 8px;"></i>
+                                <strong><?= htmlspecialchars($r['nombre_software']) ?></strong>
+                            </td>
+                            <td>
+                                <span class="status-badge" style="background: var(--gray-200); color: var(--gray-700);">
+                                    <?= htmlspecialchars($r['version']) ?>
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge badge-info">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <?= htmlspecialchars($r['fecha_ult_venc'] ?? 'N/A') ?>
+                                </span>
+                            </td>
+                            <td>
+                                <i class="fas fa-school" style="color: var(--secondary); margin-right: 8px;"></i>
+                                <?= htmlspecialchars($r['establecimiento']) ?>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else: ?>
+            <div class="empty-state">
+                <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                <p>Todo el software crítico tiene licencias válidas</p>
+                <p style="font-size: 0.9rem; color: var(--gray-600); margin-top: 8px;">
+                    El sistema está correctamente licenciado.
+                </p>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
+
+<script>
+    // Efectos de interacción
+    document.addEventListener('DOMContentLoaded', function() {
+        // Actualizar contadores en tiempo real
+        const counters = document.querySelectorAll('.stat-number');
+        counters.forEach(counter => {
+            const target = parseInt(counter.textContent);
+            let current = 0;
+            const increment = target / 50;
+            
+            const updateCounter = () => {
+                if (current < target) {
+                    current += increment;
+                    counter.textContent = Math.ceil(current);
+                    setTimeout(updateCounter, 20);
+                } else {
+                    counter.textContent = target;
+                }
+            };
+            
+            updateCounter();
+        });
+
+        // Efecto hover en tarjetas
+        const cards = document.querySelectorAll('.alert-card, .stat-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    });
+</script>
 </body>
 </html>
