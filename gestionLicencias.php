@@ -349,3 +349,71 @@ if ($rol === "ENCARGADO") {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+<?php
+if ($rol === "ENCARGADO" && $licencias && $licencias->num_rows > 0) {
+    $licencias->data_seek(0); // reiniciar puntero del resultset
+    $proximas = [];
+
+    while ($row = $licencias->fetch_assoc()) {
+        $hoy = date('Y-m-d');
+        $vencimiento = $row['fecha_vencimiento'];
+        $dias_restantes = floor((strtotime($vencimiento) - strtotime($hoy)) / (60 * 60 * 24));
+
+        if ($dias_restantes >= 0 && $dias_restantes <= 30) {
+            $proximas[] = $row;
+        }
+    }
+
+    if (count($proximas) > 0) {
+        require 'phpmailer/Exception.php';
+        require 'phpmailer/PHPMailer.php';
+        require 'phpmailer/SMTP.php';
+
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'sandbox.smtp.mailtrap.io';
+            $mail->SMTPAuth = true;
+            $mail->Username = '50615979dcf445'; // usuario Mailtrap
+            $mail->Password = '084d022f9ec7c1'; // contraseña Mailtrap
+            $mail->SMTPSecure = 'tls';
+            $mail->Port = 587;
+
+            $mail->setFrom('notificaciones@sistema-licencias.cl', 'Sistema de Licencias');
+            $mail->addAddress('jeremytortuguita@gmail.com', 'Jeremy'); // Destinatario principal
+
+            $mail->isHTML(true);
+            $mail->Subject = "Notificacion: Licencias proximas a vencer";
+
+            $body = "<h2>Estimado/a </h2>";
+            $body .= "<p>Se han detectado las siguientes licencias de su establecimiento que vencen en los proximos 30 dias:</p>";
+            $body .= "<table border='1' cellspacing='0' cellpadding='5'>
+                        <tr>
+                            <th>Equipo</th>
+                            <th>Software</th>
+                            <th>Version</th>
+                            <th>Fecha de Vencimiento</th>
+                        </tr>";
+            foreach ($proximas as $lic) {
+                $body .= "<tr>
+                            <td>{$lic['nombre_equipo']}</td>
+                            <td>{$lic['nombre_software']}</td>
+                            <td>{$lic['version']}</td>
+                            <td>{$lic['fecha_vencimiento']}</td>
+                          </tr>";
+            }
+            $body .= "</table><p>Por favor, gestione la renovacion a la brevedad.</p>";
+
+            $mail->Body = $body;
+            $mail->AltBody = "Tiene licencias proximas a vencer. Revise el sistema para mas detalles.";
+
+            $mail->send();
+            // Puedes mostrar un aviso en pantalla si quieres:
+            echo "<div class='notice success'><i class='fas fa-envelope'></i> Se ha enviado una notificación de licencias próximas a vencer a su correo.</div>";
+        } catch (Exception $e) {
+            echo "<div class='notice error'>❌ Error al enviar notificación: {$mail->ErrorInfo}</div>";
+        }
+    }
+}
+?>

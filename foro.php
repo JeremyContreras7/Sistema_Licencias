@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['correo']) || !isset($_SESSION['nombre'])) {
+    header("Location: index.php"); // Redirige si no hay sesión
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -26,17 +34,22 @@
         </div>
         
         <form id="contactForm" class="contact-form" method="POST" action="enviar.php">
-            <div class="form-row">
+           <div class="form-row">
                 <div class="form-group">
                     <label for="name">Nombre <span class="required">*</span></label>
-                    <input type="text" id="name" name="name" required placeholder="Ingrese su nombre completo">
+                    <input type="text" id="name" name="name" 
+                        value="<?php echo htmlspecialchars($_SESSION['nombre']); ?>" 
+                        readonly>
                 </div>
                 
                 <div class="form-group">
                     <label for="email">Correo Electrónico <span class="required">*</span></label>
-                    <input type="email" id="email" name="email" required placeholder="ejemplo@correo.com">
+                    <input type="email" id="email" name="email" 
+                        value="<?php echo htmlspecialchars($_SESSION['correo']); ?>" 
+                        readonly>
                 </div>
             </div>
+
             
             <div class="form-group full-width">
                 <label for="subject">Asunto <span class="required">*</span></label>
