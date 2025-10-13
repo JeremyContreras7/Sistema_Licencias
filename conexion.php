@@ -10,6 +10,5 @@ $conexion = new mysqli($host, $usuario, $password, $dbname, $puerto);
 if ($conexion->connect_error) {
     die("❌ Error en la conexión: " . $conexion->connect_error);
 } else {
-    echo "✅ Conexión exitosa a la base de datos.";
 }
 ?>

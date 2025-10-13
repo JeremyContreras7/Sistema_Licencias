@@ -9,24 +9,56 @@ include("conexion.php");
 
 // --- CREAR USUARIO ---
 if (isset($_POST['crear'])) {
-    $nombre = $_POST['nombre'];
-    $correo = $_POST['correo'];
+    $nombre = $conexion->real_escape_string($_POST['nombre']);
+    $correo = $conexion->real_escape_string($_POST['correo']);
     $pass = password_hash($_POST['pass'], PASSWORD_DEFAULT);
-    $rol = $_POST['rol'];
-    $tipo_encargado = ($_POST['rol'] === "USUARIO") ? $_POST['tipo_encargado'] : null;
-    $id_establecimiento = $_POST['id_establecimiento'];
+    $rol = $conexion->real_escape_string($_POST['rol']);
+    $tipo_encargado = ($_POST['rol'] === "USUARIO") ? $conexion->real_escape_string($_POST['tipo_encargado']) : null;
+    $id_establecimiento = (int)$_POST['id_establecimiento'];
     
     $sql = "INSERT INTO usuarios (nombre, correo, pass, rol, id_establecimiento, tipo_encargado) 
             VALUES ('$nombre','$correo','$pass','$rol','$id_establecimiento','$tipo_encargado')";
 
-    $conexion->query($sql);
+    if ($conexion->query($sql)) {
+        $_SESSION['success'] = "✅ Usuario creado correctamente";
+    } else {
+        $_SESSION['error'] = "❌ Error al crear el usuario: " . $conexion->error;
+    }
+    
+    header("Location: gestionUsuarios.php");
+    exit();
 }
 
 // --- ELIMINAR USUARIO ---
 if (isset($_GET['eliminar'])) {
-    $id = $_GET['eliminar'];
-    $conexion->query("DELETE FROM usuarios WHERE id_usuario=$id");
-    header("Location: gestion_usuarios.php");
+    $id = (int)$_GET['eliminar'];
+    
+    // Verificar que el usuario existe y no se está eliminando a sí mismo
+    $current_user_id = $_SESSION['id_usuario'] ?? 0;
+    
+    if ($id == $current_user_id) {
+        $_SESSION['error'] = "❌ No puedes eliminar tu propio usuario";
+    } else {
+        // Verificar si el usuario existe
+        $check_user = $conexion->query("SELECT nombre FROM usuarios WHERE id_usuario = $id");
+        if ($check_user->num_rows > 0) {
+            $user_data = $check_user->fetch_assoc();
+            $user_name = $user_data['nombre'];
+            
+            // Eliminar usuario
+            $result = $conexion->query("DELETE FROM usuarios WHERE id_usuario = $id");
+            
+            if ($result) {
+                $_SESSION['success'] = "🗑️ Usuario <strong>'$user_name'</strong> eliminado correctamente";
+            } else {
+                $_SESSION['error'] = "❌ Error al eliminar el usuario: " . $conexion->error;
+            }
+        } else {
+            $_SESSION['error'] = "❌ El usuario no existe";
+        }
+    }
+    
+    header("Location: gestionUsuarios.php");
     exit();
 }
 
@@ -44,33 +76,41 @@ $admin_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE ro
 $encargado_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE rol = 'ENCARGADO'")->fetch_assoc()['count'];
 $usuario_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE rol = 'USUARIO'")->fetch_assoc()['count'];
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styleGusuario.css">
-    <link rel="icon" href="/img/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1><i class="fas fa-users-cog"></i> Gesti&oacute;n de Usuarios</h1>
-                    <p class="subtitle">Administra los usuarios del sistema de licencias</p>
-                </div>
-                <div class="header-actions">
-                    <a href="menu.php" class="btn btn-outline-light">
-                        <i class="fas fa-arrow-left"></i> Volver al Men&uacute;
-                    </a>
-                </div>
-            </div>
+            <h1><i class="fas fa-users-cog"></i> Gesti&oacute;n de Usuarios</h1>
+            <p>Administra los usuarios del sistema de licencias</p>
+            <a href="menu.php" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Volver al Men&uacute;
+            </a>
         </header>
+
+        <!-- Mensajes -->
+        <?php if (isset($_SESSION['success'])): ?>
+            <div class="alert alert-success animate__animated animate__slideInDown">
+                <i class="fas fa-check-circle"></i> 
+                <div><?php echo $_SESSION['success']; unset($_SESSION['success']); ?></div>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['error'])): ?>
+            <div class="alert alert-danger animate__animated animate__slideInDown">
+                <i class="fas fa-exclamation-triangle"></i> 
+                <div><?php echo $_SESSION['error']; unset($_SESSION['error']); ?></div>
+            </div>
+        <?php endif; ?>
 
         <!-- Estadísticas -->
         <div class="stats-container">
@@ -104,126 +144,96 @@ $usuario_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE 
             </div>
         </div>
 
-        <!-- Formulario de creación -->
+        <!-- Formulario -->
         <div class="card">
             <div class="card-header">
-                <h5><i class="fas fa-user-plus"></i> Registrar Nuevo Usuario</h5>
+                <h3><i class="fas fa-user-plus"></i> Registrar Nuevo Usuario</h3>
             </div>
             <div class="card-body">
-                <form method="POST" action="" id="userForm">
+                <form method="POST" action="">
                     <div class="form-grid">
                         <div class="field">
                             <label for="nombre">
                                 <i class="fas fa-user"></i>
                                 Nombre completo
                             </label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" 
-                                   placeholder="Ingresa el nombre completo" required>
+                            <input type="text" id="nombre" name="nombre" placeholder="Ingresa el nombre completo" required>
                         </div>
-
                         <div class="field">
                             <label for="correo">
                                 <i class="fas fa-envelope"></i>
                                 Correo electrónico
                             </label>
-                            <input type="email" class="form-control" id="correo" name="correo" 
-                                   placeholder="usuario@institucion.edu" required>
+                            <input type="email" id="correo" name="correo" placeholder="usuario@institucion.edu" required>
                         </div>
-
                         <div class="field">
                             <label for="pass">
                                 <i class="fas fa-lock"></i>
                                 Contraseña
                             </label>
-                            <input type="password" class="form-control" id="pass" name="pass" 
-                                   placeholder="Crear una contraseña segura" required>
-                            <div class="password-strength">
-                                <div class="strength-bar" id="passwordStrength"></div>
-                            </div>
+                            <input type="password" id="pass" name="pass" placeholder="Crear una contraseña segura" required>
                         </div>
-
                         <div class="field">
                             <label for="rol">
                                 <i class="fas fa-user-tag"></i>
                                 Rol del usuario
                             </label>
-                            <div class="select-wrapper">
-                                <select class="form-control form-select" id="rol" name="rol" required onchange="toggleEncargado()">
-                                    <option value="" selected disabled>Seleccionar rol</option>
-                                    <option value="ADMIN">Administrador del Sistema</option>
-                                    <option value="ENCARGADO">Encargado Informático</option>
-                                    <option value="USUARIO">Personal Escolar</option>
-                                </select>
-                            </div>
+                            <select id="rol" name="rol" required onchange="toggleTipoEncargado(this.value)">
+                                <option value="">Seleccionar rol</option>
+                                <option value="ADMIN">Administrador del Sistema</option>
+                                <option value="ENCARGADO">Encargado Informático</option>
+                                <option value="USUARIO">Personal Escolar</option>
+                            </select>
                         </div>
-
                         <div class="field">
                             <label for="id_establecimiento">
                                 <i class="fas fa-school"></i>
                                 Establecimiento
                             </label>
-                            <div class="select-wrapper">
-                                <select class="form-control form-select" id="id_establecimiento" name="id_establecimiento" required>
-                                    <option value="" selected disabled>Seleccionar establecimiento</option>
-                                    <?php
-                                    $escuelas = $conexion->query("SELECT id_establecimiento, nombre_establecimiento FROM establecimientos ORDER BY nombre_establecimiento");
-                                    while ($row = $escuelas->fetch_assoc()) {
-                                        echo "<option value='".$row['id_establecimiento']."'>".htmlspecialchars($row['nombre_establecimiento'])."</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
+                            <select id="id_establecimiento" name="id_establecimiento" required>
+                                <option value="">Seleccionar establecimiento</option>
+                                <?php
+                                $escuelas = $conexion->query("SELECT id_establecimiento, nombre_establecimiento FROM establecimientos ORDER BY nombre_establecimiento");
+                                while ($row = $escuelas->fetch_assoc()) {
+                                    echo "<option value='".$row['id_establecimiento']."'>".htmlspecialchars($row['nombre_establecimiento'])."</option>";
+                                }
+                                ?>
+                            </select>
                         </div>
-
                         <div class="field">
                             <label for="tipo_encargado">
                                 <i class="fas fa-user-cog"></i>
                                 Tipo de Encargado
                             </label>
-                            <div class="select-wrapper">
-                                <select class="form-control form-select" id="tipo_encargado" name="tipo_encargado" disabled>
-                                    <option value="" selected disabled>Seleccionar tipo</option>
-                                    <option value="INFORMATICA">Informática</option>
-                                    <option value="ACADEMICA">Académica</option>
-                                    <option value="ADMINISTRATIVA">Administrativa</option>
-                                    <option value="DIRECCION">Dirección</option>
-                                    <option value="CONVIVENCIA">Convivencia Escolar</option>
-                                </select>
-                            </div>
+                            <select id="tipo_encargado" name="tipo_encargado" disabled>
+                                <option value="">Seleccionar tipo</option>
+                                <option value="INFORMATICA">Informática</option>
+                                <option value="ACADEMICA">Académica</option>
+                                <option value="ADMINISTRATIVA">Administrativa</option>
+                                <option value="DIRECCION">Dirección</option>
+                                <option value="CONVIVENCIA">Convivencia Escolar</option>
+                            </select>
                             <small style="color: var(--gray-600); margin-top: 8px; display: block;">
                                 Solo aplica para usuarios con rol "Personal Escolar"
                             </small>
                         </div>
                     </div>
-
-                    <div class="btn-group">
-                        <button type="submit" name="crear" class="btn btn-primary" id="submitBtn">
-                            <i class="fas fa-save"></i>
-                            <span class="btn-text">Registrar Usuario</span>
-                        </button>
-                        <a href="gestion_usuarios.php" class="btn btn-outline">
-                            <i class="fas fa-broom"></i>
-                            Limpiar Formulario
-                        </a>
-                    </div>
+                    <button type="submit" name="crear" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Registrar Usuario
+                    </button>
+                    <a href="gestionUsuarios.php" class="btn btn-secondary">
+                        <i class="fas fa-broom"></i> Limpiar Formulario
+                    </a>
                 </form>
             </div>
         </div>
 
-        <!-- Lista de usuarios -->
+        <!-- Tabla de usuarios -->
         <div class="table-container">
-            <div class="table-header">
-                <h2 class="section-title">
-                    <i class="fas fa-list"></i>
-                    Usuarios Registrados
-                </h2>
-                <div class="count-badge">
-                    <i class="fas fa-users"></i>
-                    <?= $total_usuarios ?> usuarios
-                </div>
+            <div class="card-header">
+                <h3><i class="fas fa-list"></i> Usuarios Registrados</h3>
             </div>
-
-            <div class="table-responsive">
+            <div style="overflow-x: auto;">
                 <table class="table">
                     <thead>
                         <tr>
@@ -238,171 +248,212 @@ $usuario_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE 
                         </tr>
                     </thead>
                     <tbody>
-                        <?php 
-                        if ($usuarios->num_rows > 0) {
+                        <?php if ($usuarios->num_rows > 0): ?>
+                            <?php 
+                            $usuarios->data_seek(0);
                             while($row = $usuarios->fetch_assoc()): 
-                                // Determinar la clase del badge según el rol
-                                $badge_class = '';
-                                $badge_icon = '';
+                                $is_current_user = ($row['id_usuario'] == ($_SESSION['id_usuario'] ?? 0));
+                                
+                                // Determinar clase del badge
                                 if ($row['rol'] === 'ADMIN') {
                                     $badge_class = 'badge-admin';
-                                    $badge_icon = 'fa-crown';
                                 } elseif ($row['rol'] === 'ENCARGADO') {
                                     $badge_class = 'badge-encargado';
-                                    $badge_icon = 'fa-laptop-code';
                                 } else {
                                     $badge_class = 'badge-usuario';
-                                    $badge_icon = 'fa-user';
                                 }
-                        ?>
-                        <tr>
-                            <td><strong>#<?= $row['id_usuario'] ?></strong></td>
-                            <td>
-                                <i class="fas fa-user" style="color: var(--primary); margin-right: 8px;"></i>
-                                <?= htmlspecialchars($row['nombre']) ?>
-                            </td>
-                            <td>
-                                <i class="fas fa-envelope" style="color: var(--secondary); margin-right: 8px;"></i>
-                                <?= htmlspecialchars($row['correo']) ?>
-                            </td>
-                            <td>
-                                <span class="badge <?= $badge_class ?>">
-                                    <i class="fas <?= $badge_icon ?>"></i>
-                                    <?= $row['rol'] ?>
-                                </span>
-                            </td>
-                            <td>
-                                <i class="fas fa-school" style="color: var(--info); margin-right: 8px;"></i>
-                                <?= htmlspecialchars($row['nombre_establecimiento'] ?? 'Sin asignar') ?>
-                            </td>
-                            <td>
-                                <?php if ($row['tipo_encargado']): ?>
-                                    <span class="badge" style="background: rgba(139, 92, 246, 0.1); color: var(--primary);">
-                                        <?= $row['tipo_encargado'] ?>
+                            ?>
+                            <tr>
+                                <td><strong>#<?= $row['id_usuario'] ?></strong></td>
+                                <td>
+                                    <i class="fas fa-user" style="color: var(--primary); margin-right: 10px;"></i>
+                                    <?= htmlspecialchars($row['nombre']) ?>
+                                    <?php if ($is_current_user): ?>
+                                        <span class="badge badge-current" style="margin-left: 10px;">
+                                            <i class="fas fa-user-check"></i> Tú
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <i class="fas fa-envelope" style="color: var(--secondary); margin-right: 10px;"></i>
+                                    <?= htmlspecialchars($row['correo']) ?>
+                                </td>
+                                <td>
+                                    <span class="badge <?= $badge_class ?>">
+                                        <i class="fas <?= $row['rol'] === 'ADMIN' ? 'fa-crown' : ($row['rol'] === 'ENCARGADO' ? 'fa-laptop-code' : 'fa-user') ?>"></i>
+                                        <?= $row['rol'] ?>
                                     </span>
-                                <?php else: ?>
-                                    <span style="color: var(--gray-500);">—</span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <small style="color: var(--gray-600);">
-                                    <?= date('d/m/Y', strtotime($row['fecha_registro'])) ?>
-                                </small>
-                            </td>
-                            <td class="actions">
-                                <a href="editar_usuario.php?id=<?= $row['id_usuario'] ?>" class="action-btn btn-edit" title="Editar usuario">
-                                    <i class="fas fa-edit"></i>
-                                    Editar
-                                </a>
-                                <a href="gestion_usuarios.php?eliminar=<?= $row['id_usuario'] ?>" 
-                                   class="action-btn btn-delete" 
-                                   title="Eliminar usuario"
-                                   onclick="return confirm('¿Estás seguro de eliminar al usuario <?= htmlspecialchars($row['nombre']) ?>?\n\nEsta acción no se puede deshacer.')">
-                                    <i class="fas fa-trash"></i>
-                                    Eliminar
-                                </a>
-                            </td>
-                        </tr>
-                        <?php 
-                            endwhile;
-                        } else {
-                        ?>
-                        <tr>
-                            <td colspan="8" class="empty-state">
-                                <i class="fas fa-users-slash"></i>
-                                <p>No hay usuarios registrados</p>
-                                <p class="subtext">Comienza agregando el primer usuario utilizando el formulario superior.</p>
-                            </td>
-                        </tr>
-                        <?php } ?>
+                                </td>
+                                <td>
+                                    <i class="fas fa-school" style="color: var(--success); margin-right: 10px;"></i>
+                                    <?= htmlspecialchars($row['nombre_establecimiento'] ?? 'Sin asignar') ?>
+                                </td>
+                                <td>
+                                    <?php if ($row['tipo_encargado']): ?>
+                                        <span class="badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white;">
+                                            <?= $row['tipo_encargado'] ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span style="color: var(--gray-500);">—</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <small style="color: var(--gray-600);">
+                                        <?= date('d/m/Y', strtotime($row['fecha_registro'])) ?>
+                                    </small>
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                        <a href="editar_usuario.php?id=<?= $row['id_usuario'] ?>" class="action-btn btn-edit">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                        <?php if (!$is_current_user): ?>
+                                            <button class="action-btn btn-delete" 
+                                                    onclick="showDeleteModal(<?= $row['id_usuario'] ?>, '<?= addslashes(htmlspecialchars($row['nombre'])) ?>', '<?= $row['rol'] ?>')">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </button>
+                                        <?php else: ?>
+                                            <span class="action-btn btn-disabled">
+                                                <i class="fas fa-trash"></i> Eliminar
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="8" class="empty-state">
+                                    <i class="fas fa-users-slash"></i>
+                                    <p>No hay usuarios registrados</p>
+                                    <p class="subtext">Comienza agregando el primer usuario utilizando el formulario superior.</p>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <script>
-        function toggleEncargado() {
-            let rol = document.getElementById("rol").value;
-            let encargadoSelect = document.getElementById("tipo_encargado");
-            let encargadoLabel = encargadoSelect.previousElementSibling;
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="modal-title">Confirmar Eliminación</h3>
+            <p class="modal-message" id="modalMessage">
+                ¿Estás seguro de que deseas eliminar este usuario?
+            </p>
+            <div class="modal-user-info" id="userInfo">
+                <!-- Información del usuario se insertará aquí -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-cancel" onclick="hideDeleteModal()">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <a href="#" class="btn btn-confirm-delete" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Sí, Eliminar Usuario
+                </a>
+            </div>
+        </div>
+    </div>
 
-            if (rol === "USUARIO") {
-                encargadoSelect.disabled = false;
-                encargadoSelect.required = true;
-                encargadoLabel.style.opacity = "1";
+    <script>
+        let userToDelete = null;
+
+        function toggleTipoEncargado(rol) {
+            const select = document.getElementById('tipo_encargado');
+            if (rol === 'USUARIO') {
+                select.disabled = false;
+                select.required = true;
             } else {
-                encargadoSelect.disabled = true;
-                encargadoSelect.required = false;
-                encargadoSelect.selectedIndex = 0;
-                encargadoLabel.style.opacity = "0.6";
+                select.disabled = true;
+                select.required = false;
+                select.value = '';
             }
         }
 
-        // Password strength indicator
-        document.getElementById('pass').addEventListener('input', function() {
-            const password = this.value;
-            const strengthBar = document.getElementById('passwordStrength');
-            let strength = 0;
+        function showDeleteModal(userId, userName, userRole) {
+            userToDelete = userId;
+            const modal = document.getElementById('deleteModal');
+            const userInfo = document.getElementById('userInfo');
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
             
-            if (password.length > 6) strength++;
-            if (password.length > 10) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            // Actualizar información del usuario
+            userInfo.innerHTML = `
+                <div style="text-align: left;">
+                    <strong><i class="fas fa-user"></i> Nombre:</strong> ${userName}<br>
+                    <strong><i class="fas fa-tag"></i> Rol:</strong> ${userRole}<br>
+                    <strong><i class="fas fa-id-badge"></i> ID:</strong> #${userId}
+                </div>
+            `;
             
-            strengthBar.className = 'strength-bar ' + 
-                (strength < 2 ? 'strength-weak' : 
-                 strength < 4 ? 'strength-medium' : 'strength-strong');
+            // Actualizar mensaje
+            document.getElementById('modalMessage').textContent = 
+                `Esta acción eliminará permanentemente al usuario "${userName}" del sistema.`;
+            
+            // Actualizar enlace de confirmación
+            confirmBtn.href = `gestionUsuarios.php?eliminar=${userId}`;
+            
+            // Mostrar modal
+            modal.style.display = 'flex';
+            
+            // Prevenir scroll del body
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            modal.style.display = 'none';
+            userToDelete = null;
+            
+            // Restaurar scroll del body
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideDeleteModal();
+            }
         });
 
-        // Form submission handling
-        document.getElementById('userForm').addEventListener('submit', function(e) {
-            const btn = document.getElementById('submitBtn');
-            const btnText = btn.querySelector('.btn-text');
-            const btnIcon = btn.querySelector('.fa-save');
-            
-            btnText.textContent = 'Registrando...';
-            btnIcon.className = 'fas fa-spinner fa-spin';
-            btn.classList.add('btn-loading');
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideDeleteModal();
+            }
         });
 
-        // Real-time form validation
-        const inputs = document.querySelectorAll('.form-control');
-        inputs.forEach(input => {
-            input.addEventListener('blur', function() {
-                if (this.checkValidity()) {
-                    this.style.borderColor = 'var(--success)';
-                } else {
-                    this.style.borderColor = 'var(--danger)';
-                }
-            });
-            
-            input.addEventListener('input', function() {
-                this.style.borderColor = 'var(--gray-300)';
-            });
-        });
-
-        // Initialize tooltips and effects
+        // Efectos hover mejorados para las filas de la tabla
         document.addEventListener('DOMContentLoaded', function() {
-            // Animate stats counters
+            const tableRows = document.querySelectorAll('.table tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transition = 'all 0.3s ease';
+                });
+            });
+
+            // Animar contadores de estadísticas
             const statNumbers = document.querySelectorAll('.stat-number');
             statNumbers.forEach(stat => {
                 const target = parseInt(stat.textContent);
                 let current = 0;
-                const increment = target / 30;
+                const increment = target / 50;
+                const duration = 1500;
+                const stepTime = duration / (target / increment);
                 
-                const updateCounter = () => {
-                    if (current < target) {
-                        current += increment;
-                        stat.textContent = Math.ceil(current);
-                        setTimeout(updateCounter, 50);
-                    } else {
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
                         stat.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        stat.textContent = Math.ceil(current);
                     }
-                };
-                
-                updateCounter();
+                }, stepTime);
             });
         });
     </script>

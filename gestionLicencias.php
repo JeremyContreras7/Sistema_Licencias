@@ -11,6 +11,9 @@ $rol = $_SESSION['rol'];
 $id_establecimiento = $_SESSION['id_establecimiento'] ?? null;
 $nombre_usuario = htmlspecialchars($_SESSION['nombre'] ?? '');
 
+// Determinar la ruta del menú según el rol
+$menu_url = ($rol === "ADMIN") ? "menu.php" : "menu_informatico.php";
+
 // --- CREAR LICENCIA ---
 if (isset($_POST['crear'])) {
     $id_equipo = (int)$_POST['id_equipo'];
@@ -150,8 +153,281 @@ if ($rol === "ENCARGADO") {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styleGlicencias.css">
+    <style>
+        /* Modal de Confirmación */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 0;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            overflow: hidden;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .modal-header i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .modal-body p {
+            margin: 0 0 20px 0;
+            color: #555;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .licencia-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #e74c3c;
+            text-align: left;
+        }
+
+        .licencia-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .licencia-detail:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+
+        .estado-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .estado-vigente { background: #d4edda; color: #155724; }
+        .estado-proxima { background: #fff3cd; color: #856404; }
+        .estado-vencida { background: #f8d7da; color: #721c24; }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .btn-cancel {
+            background: #95a5a6;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-cancel:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        .btn-confirm-delete {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-confirm-delete:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn-delete {
+            background: transparent;
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-delete:hover {
+            background: #e74c3c;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+        }
+
+        /* Mejoras para la tabla */
+        .action-btn {
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive para el modal */
+        @media (max-width: 480px) {
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .btn-cancel, .btn-confirm-delete {
+                flex: none;
+            }
+
+            .licencia-detail {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Modal de Confirmación de Eliminación -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Confirmar Eliminación</h3>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar esta licencia?</p>
+                <div class="licencia-info">
+                    <div class="licencia-detail">
+                        <span class="detail-label">Software:</span>
+                        <span class="detail-value" id="licenciaSoftware"></span>
+                    </div>
+                    <div class="licencia-detail">
+                        <span class="detail-label">Equipo:</span>
+                        <span class="detail-value" id="licenciaEquipo"></span>
+                    </div>
+                    <div class="licencia-detail">
+                        <span class="detail-label">Usuario:</span>
+                        <span class="detail-value" id="licenciaUsuario"></span>
+                    </div>
+                    <div class="licencia-detail">
+                        <span class="detail-label">Vencimiento:</span>
+                        <span class="detail-value" id="licenciaVencimiento"></span>
+                    </div>
+                    <div class="licencia-detail">
+                        <span class="detail-label">Estado:</span>
+                        <span class="detail-value" id="licenciaEstado"></span>
+                    </div>
+                </div>
+                <p style="color: #e74c3c; font-weight: 500;">
+                    <i class="fas fa-info-circle"></i>
+                    Esta acción no se puede deshacer
+                </p>
+                <div class="modal-actions">
+                    <button class="btn-cancel" id="cancelDelete">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <a href="#" class="btn-confirm-delete" id="confirmDelete">
+                        <i class="fas fa-trash"></i> Sí, Eliminar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Encabezado -->
         <div class="header">
@@ -164,7 +440,7 @@ if ($rol === "ENCARGADO") {
                     <div class="user-info">
                         <i class="fas fa-user me-1"></i> <?= $nombre_usuario ?> — <?= htmlspecialchars($rol) ?>
                     </div>
-                    <a href="menu.php" class="btn btn-light btn-sm mt-2">
+                    <a href="<?= $menu_url ?>" class="btn btn-light btn-sm mt-2">
                         <i class="fas fa-arrow-left me-1"></i> Volver al Menú
                     </a>
                 </div>
@@ -306,12 +582,15 @@ if ($rol === "ENCARGADO") {
                                 if ($venc < $hoy) {
                                     $estado_class = "estado-vencida";
                                     $txt = "Vencida";
+                                    $badge_class = "estado-vencida";
                                 } elseif ($dias <= 30) {
                                     $estado_class = "estado-proxima";
                                     $txt = "Próxima";
+                                    $badge_class = "estado-proxima";
                                 } else {
                                     $estado_class = "estado-vigente";
                                     $txt = "Vigente";
+                                    $badge_class = "estado-vigente";
                                 }
                         ?>
                             <tr>
@@ -327,7 +606,15 @@ if ($rol === "ENCARGADO") {
                                     <a href="editar_licencia.php?id=<?= $row['id_licencia'] ?>" class="btn btn-sm btn-outline-primary action-btn" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="gestionLicencias.php?eliminar=<?= $row['id_licencia'] ?>" class="btn btn-sm btn-outline-danger action-btn" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar esta licencia?')">
+                                    <a href="#" class="btn-delete action-btn" 
+                                       data-id="<?= $row['id_licencia'] ?>"
+                                       data-software="<?= htmlspecialchars($row['nombre_software'] . ' ' . $row['version']) ?>"
+                                       data-equipo="<?= htmlspecialchars($row['nombre_equipo']) ?>"
+                                       data-usuario="<?= htmlspecialchars($row['usuario']) ?>"
+                                       data-vencimiento="<?= $row['fecha_vencimiento'] ?>"
+                                       data-estado="<?= $txt ?>"
+                                       data-estado-class="<?= $badge_class ?>"
+                                       title="Eliminar">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
                                 </td>
@@ -347,6 +634,92 @@ if ($rol === "ENCARGADO") {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Modal de Confirmación para Eliminar
+        const deleteModal = document.getElementById('deleteModal');
+        const cancelDelete = document.getElementById('cancelDelete');
+        const confirmDelete = document.getElementById('confirmDelete');
+        const licenciaSoftware = document.getElementById('licenciaSoftware');
+        const licenciaEquipo = document.getElementById('licenciaEquipo');
+        const licenciaUsuario = document.getElementById('licenciaUsuario');
+        const licenciaVencimiento = document.getElementById('licenciaVencimiento');
+        const licenciaEstado = document.getElementById('licenciaEstado');
+
+        let currentDeleteUrl = '';
+
+        // Abrir modal cuando se hace clic en eliminar
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const id = this.getAttribute('data-id');
+                const software = this.getAttribute('data-software');
+                const equipo = this.getAttribute('data-equipo');
+                const usuario = this.getAttribute('data-usuario');
+                const vencimiento = this.getAttribute('data-vencimiento');
+                const estado = this.getAttribute('data-estado');
+                const estadoClass = this.getAttribute('data-estado-class');
+                
+                // Actualizar información en el modal
+                licenciaSoftware.textContent = software;
+                licenciaEquipo.textContent = equipo;
+                licenciaUsuario.textContent = usuario;
+                licenciaVencimiento.textContent = vencimiento;
+                licenciaEstado.innerHTML = `<span class="estado-badge ${estadoClass}">${estado}</span>`;
+                
+                // Configurar URL de eliminación
+                currentDeleteUrl = `gestionLicencias.php?eliminar=${id}`;
+                
+                // Mostrar modal
+                deleteModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        // Cerrar modal al cancelar
+        cancelDelete.addEventListener('click', function() {
+            deleteModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+
+        // Confirmar eliminación
+        confirmDelete.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = currentDeleteUrl;
+        });
+
+        // Cerrar modal al hacer clic fuera
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === deleteModal) {
+                deleteModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Cerrar modal con tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && deleteModal.style.display === 'block') {
+                deleteModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Efectos hover para las filas de la tabla
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                });
+                
+                row.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+        });
+    </script>
 </body>
 </html>
 <?php

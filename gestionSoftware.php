@@ -65,7 +65,7 @@ $software_critico = $conexion->query("SELECT COUNT(*) as count FROM software WHE
                     <p>Registra y administra el software disponible en tu establecimiento</p>
                 </div>
                 <div class="header-actions">
-                    <a class="back-btn" href="menu.php">
+                    <a class="back-btn" href="menu_informatico.php">
                         <i class="fas fa-arrow-left"></i> Volver al Men&uacute;
                     </a>
                     <div class="user-badge">

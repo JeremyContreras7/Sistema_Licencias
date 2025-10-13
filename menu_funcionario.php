@@ -10,64 +10,161 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "USUARIO") {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Panel Usuario</title>
-  <!-- Normalize -->
+  <title>Panel Usuario - Municipalidad de Ovalle</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <!-- Estilos personalizados -->
-  <link rel="stylesheet" href="css/stylemenu_funcionario.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" href="img/logo.png">
+  <link rel="stylesheet" href="css/stylemenu_funcionario.css">
+
 </head>
 <body>
+  <!-- Efecto de partículas de fondo -->
+  <div class="particles" id="particles"></div>
+
   <div class="layout">
-    <!-- Sidebar -->
+    <!-- Sidebar Mejorado -->
     <aside class="sidebar">
       <div class="brand">
-        <img src="img/logo.png" alt="Logo" class="brand-logo">
+        <img src="img/logo.png" alt="Logo Municipalidad" class="brand-logo">
         <div class="brand-text">
-          <h2>Panel Usuario</h2>
+          <h2>Panel de Usuario</h2>
           <p>Departamento de Educación</p>
         </div>
       </div>
       <nav class="nav">
         <ul>
-          <li><a href="mis_licencias.php">📑 Mis licencias</a></li>
-          <li><a href="reportar_problema.php">⚠️ Reportar problema</a></li>
+          <li>
+            <a href="mis_licencias.php" class="active">
+              <i class="fas fa-file-contract"></i>
+              <span>Mis Licencias</span>
+              <span class="badge">2</span>
+            </a>
+          </li>
+          <li>
+            <a href="reportar_problema.php">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span>Reportar Problema</span>
+            </a>
+          </li>
         </ul>
       </nav>
-      <a href="logout.php" class="logout">🚪 Cerrar sesión</a>
+      <a href="logout.php" class="logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Cerrar Sesión</span>
+      </a>
     </aside>
 
     <!-- Contenido principal -->
     <main class="main">
       <header class="header">
         <div>
-          <h1>🙋 Hola, <?= htmlspecialchars($_SESSION['nombre']) ?></h1>
-          <span class="role">USUARIO</span>
+          <h1>
+            <i class="fas fa-user-circle"></i>
+            Hola, <?= htmlspecialchars($_SESSION['nombre']) ?>
+            <span class="role">USUARIO</span>
+          </h1>
+          <p style="color: var(--gray); margin-top: 8px; font-size: 0.95rem;">
+            <i class="fas fa-calendar-day"></i>
+            <?php echo date('d/m/Y'); ?> - Bienvenido a tu panel de control
+          </p>
         </div>
       </header>
 
       <section class="cards">
         <div class="card">
-          <div class="card-icon">📑</div>
-          <h3>Mis licencias</h3>
-          <p>Revisa el estado y detalle de tus solicitudes.</p>
-          <a href="mis_licencias.php" class="btn">Ir a licencias</a>
+          <div class="card-icon">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <h3>Mis Licencias</h3>
+          <p>Revisa el estado y detalle de tus solicitudes de licencias de software asignadas a tu equipo.</p>
+          <a href="mis_licencias.php" class="btn">
+            <i class="fas fa-arrow-right"></i>
+            Ver Mis Licencias
+          </a>
         </div>
 
         <div class="card">
-          <div class="card-icon">⚠️</div>
-          <h3>Reportar problema</h3>
-          <p>Notifica cualquier inconveniente que tengas.</p>
-          <a href="foro.php" class="btn">Enviar reporte</a>
+          <div class="card-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h3>Reportar Problema</h3>
+          <p>Notifica cualquier inconveniente técnico o problema que tengas con el software o equipos.</p>
+          <a href="foro.php" class="btn">
+            <i class="fas fa-arrow-right"></i>
+            Enviar Reporte
+          </a>
         </div>
       </section>
 
       <footer class="footer">
-        <small>Municipalidad de Ovalle – Departamento de Educación</small>
+        <small>
+          <i class="fas fa-building"></i>
+          Municipalidad de Ovalle – Departamento de Educación
+          <span style="margin: 0 10px;">•</span>
+          <i class="fas fa-phone"></i>
+          Soporte: +56 9 1234 5678
+        </small>
       </footer>
     </main>
   </div>
+
+  <script>
+    // Efecto de partículas de fondo
+    document.addEventListener('DOMContentLoaded', function() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 15;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Posición y tamaño aleatorio
+        const size = Math.random() * 60 + 20;
+        const left = Math.random() * 100;
+        const top = Math.random() * 100;
+        const delay = Math.random() * 5;
+        
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${left}%`;
+        particle.style.top = `${top}%`;
+        particle.style.animationDelay = `${delay}s`;
+        particle.style.opacity = Math.random() * 0.3 + 0.1;
+        
+        particlesContainer.appendChild(particle);
+      }
+
+      // Efecto de carga suave
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.2}s`;
+      });
+
+      // Actualizar hora en tiempo real
+      function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('es-CL', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          hour12: false 
+        });
+        const dateString = now.toLocaleDateString('es-CL', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+        
+        const timeElement = document.querySelector('.header p');
+        if (timeElement) {
+          timeElement.innerHTML = `<i class="fas fa-calendar-day"></i> ${dateString} - ${timeString} - Bienvenido a tu panel de control`;
+        }
+      }
+
+      updateTime();
+      setInterval(updateTime, 60000);
+    });
+  </script>
 </body>
 </html>
