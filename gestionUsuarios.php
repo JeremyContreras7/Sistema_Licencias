@@ -14,10 +14,16 @@ if (isset($_POST['crear'])) {
     $pass = password_hash($_POST['pass'], PASSWORD_DEFAULT);
     $rol = $conexion->real_escape_string($_POST['rol']);
     $tipo_encargado = ($_POST['rol'] === "USUARIO") ? $conexion->real_escape_string($_POST['tipo_encargado']) : null;
-    $id_establecimiento = (int)$_POST['id_establecimiento'];
     
-    $sql = "INSERT INTO usuarios (nombre, correo, pass, rol, id_establecimiento, tipo_encargado) 
-            VALUES ('$nombre','$correo','$pass','$rol','$id_establecimiento','$tipo_encargado')";
+    // Si es ADMIN, no se asigna establecimiento
+    if ($_POST['rol'] === "ADMIN") {
+        $sql = "INSERT INTO usuarios (nombre, correo, pass, rol, tipo_encargado) 
+                VALUES ('$nombre','$correo','$pass','$rol','$tipo_encargado')";
+    } else {
+        $id_establecimiento = (int)$_POST['id_establecimiento'];
+        $sql = "INSERT INTO usuarios (nombre, correo, pass, rol, id_establecimiento, tipo_encargado) 
+                VALUES ('$nombre','$correo','$pass','$rol','$id_establecimiento','$tipo_encargado')";
+    }
 
     if ($conexion->query($sql)) {
         $_SESSION['success'] = "✅ Usuario creado correctamente";
@@ -178,7 +184,7 @@ $usuario_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE 
                                 <i class="fas fa-user-tag"></i>
                                 Rol del usuario
                             </label>
-                            <select id="rol" name="rol" required onchange="toggleTipoEncargado(this.value)">
+                            <select id="rol" name="rol" required onchange="toggleCamposPorRol(this.value)">
                                 <option value="">Seleccionar rol</option>
                                 <option value="ADMIN">Administrador del Sistema</option>
                                 <option value="ENCARGADO">Encargado Informático</option>
@@ -190,7 +196,7 @@ $usuario_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE 
                                 <i class="fas fa-school"></i>
                                 Establecimiento
                             </label>
-                            <select id="id_establecimiento" name="id_establecimiento" required>
+                            <select id="id_establecimiento" name="id_establecimiento">
                                 <option value="">Seleccionar establecimiento</option>
                                 <?php
                                 $escuelas = $conexion->query("SELECT id_establecimiento, nombre_establecimiento FROM establecimientos ORDER BY nombre_establecimiento");
@@ -199,6 +205,9 @@ $usuario_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE 
                                 }
                                 ?>
                             </select>
+                            <small class="info-text" id="establecimientoHelp">
+                                Selecciona un rol para ver los requisitos
+                            </small>
                         </div>
                         <div class="field">
                             <label for="tipo_encargado">
@@ -213,7 +222,7 @@ $usuario_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE 
                                 <option value="DIRECCION">Dirección</option>
                                 <option value="CONVIVENCIA">Convivencia Escolar</option>
                             </select>
-                            <small style="color: var(--gray-600); margin-top: 8px; display: block;">
+                            <small class="info-text" id="tipoEncargadoHelp">
                                 Solo aplica para usuarios con rol "Personal Escolar"
                             </small>
                         </div>
@@ -359,103 +368,6 @@ $usuario_count = $conexion->query("SELECT COUNT(*) as count FROM usuarios WHERE 
             </div>
         </div>
     </div>
-
-    <script>
-        let userToDelete = null;
-
-        function toggleTipoEncargado(rol) {
-            const select = document.getElementById('tipo_encargado');
-            if (rol === 'USUARIO') {
-                select.disabled = false;
-                select.required = true;
-            } else {
-                select.disabled = true;
-                select.required = false;
-                select.value = '';
-            }
-        }
-
-        function showDeleteModal(userId, userName, userRole) {
-            userToDelete = userId;
-            const modal = document.getElementById('deleteModal');
-            const userInfo = document.getElementById('userInfo');
-            const confirmBtn = document.getElementById('confirmDeleteBtn');
-            
-            // Actualizar información del usuario
-            userInfo.innerHTML = `
-                <div style="text-align: left;">
-                    <strong><i class="fas fa-user"></i> Nombre:</strong> ${userName}<br>
-                    <strong><i class="fas fa-tag"></i> Rol:</strong> ${userRole}<br>
-                    <strong><i class="fas fa-id-badge"></i> ID:</strong> #${userId}
-                </div>
-            `;
-            
-            // Actualizar mensaje
-            document.getElementById('modalMessage').textContent = 
-                `Esta acción eliminará permanentemente al usuario "${userName}" del sistema.`;
-            
-            // Actualizar enlace de confirmación
-            confirmBtn.href = `gestionUsuarios.php?eliminar=${userId}`;
-            
-            // Mostrar modal
-            modal.style.display = 'flex';
-            
-            // Prevenir scroll del body
-            document.body.style.overflow = 'hidden';
-        }
-
-        function hideDeleteModal() {
-            const modal = document.getElementById('deleteModal');
-            modal.style.display = 'none';
-            userToDelete = null;
-            
-            // Restaurar scroll del body
-            document.body.style.overflow = 'auto';
-        }
-
-        // Cerrar modal al hacer clic fuera
-        document.getElementById('deleteModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                hideDeleteModal();
-            }
-        });
-
-        // Cerrar modal con ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                hideDeleteModal();
-            }
-        });
-
-        // Efectos hover mejorados para las filas de la tabla
-        document.addEventListener('DOMContentLoaded', function() {
-            const tableRows = document.querySelectorAll('.table tbody tr');
-            tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    this.style.transition = 'all 0.3s ease';
-                });
-            });
-
-            // Animar contadores de estadísticas
-            const statNumbers = document.querySelectorAll('.stat-number');
-            statNumbers.forEach(stat => {
-                const target = parseInt(stat.textContent);
-                let current = 0;
-                const increment = target / 50;
-                const duration = 1500;
-                const stepTime = duration / (target / increment);
-                
-                const timer = setInterval(() => {
-                    current += increment;
-                    if (current >= target) {
-                        stat.textContent = target;
-                        clearInterval(timer);
-                    } else {
-                        stat.textContent = Math.ceil(current);
-                    }
-                }, stepTime);
-            });
-        });
-    </script>
+<script src="js/gestionUsuarios.js"></script>
 </body>
 </html>

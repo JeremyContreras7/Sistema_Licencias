@@ -644,3 +644,19 @@
             opacity: 0.7;
             pointer-events: none;
         }
+                .field select:disabled {
+            background-color: var(--gray-100);
+            color: var(--gray-500);
+            cursor: not-allowed;
+        }
+
+        .field select:disabled + small {
+            color: var(--info) !important;
+        }
+        
+        .info-text {
+            color: var(--info);
+            font-size: 0.875rem;
+            margin-top: 8px;
+            display: block;
+        }
