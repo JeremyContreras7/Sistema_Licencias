@@ -47,6 +47,7 @@ $result = $stmt->get_result();
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Estilos personalizados -->
   <link rel="stylesheet" href="css/styleMenu.css">
+  <link rel="stylesheet" href="css/cerrarsesion.css">
   <link rel="icon" href="img/logo.png">
 </head>
 <body>
@@ -199,5 +200,6 @@ $result = $stmt->get_result();
     </main>
   </div>
 <script src="js/menuInformatico.js"></script>
+<script src="js/cerrarsesion.js"></script>
 </body>
 </html>

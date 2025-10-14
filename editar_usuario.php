@@ -38,7 +38,10 @@ if (isset($_POST['actualizar'])) {
     $correo = $conexion->real_escape_string($_POST['correo']);
     $rol = $conexion->real_escape_string($_POST['rol']);
     $tipo_encargado = ($rol === "USUARIO") ? $conexion->real_escape_string($_POST['tipo_encargado']) : null;
-    $id_establecimiento = (int)$_POST['id_establecimiento'];
+    
+    // Si es ADMIN, establecimiento es NULL, sino toma el valor del formulario
+    $id_establecimiento = ($rol === "ADMIN") ? null : (int)$_POST['id_establecimiento'];
+    
     $pass = !empty($_POST['pass']) ? password_hash($_POST['pass'], PASSWORD_DEFAULT) : $usuario['pass'];
 
     $stmt = $conexion->prepare("
@@ -70,8 +73,6 @@ if (isset($_POST['actualizar'])) {
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/editarUsuarios.css">
-
-
 </head>
 <body>
     <div class="container">
@@ -162,7 +163,8 @@ if (isset($_POST['actualizar'])) {
                                 <i class="fas fa-school"></i>
                                 Establecimiento
                             </label>
-                            <select id="id_establecimiento" name="id_establecimiento" class="form-control form-select" required>
+                            <select id="id_establecimiento" name="id_establecimiento" class="form-control form-select" 
+                                    <?= $usuario['rol'] === 'ADMIN' ? 'disabled' : 'required' ?>>
                                 <option value="">Seleccionar establecimiento</option>
                                 <?php
                                 $escuelas = $conexion->query("SELECT id_establecimiento, nombre_establecimiento FROM establecimientos ORDER BY nombre_establecimiento");
@@ -172,6 +174,11 @@ if (isset($_POST['actualizar'])) {
                                 }
                                 ?>
                             </select>
+                            <div class="form-help" id="establecimiento-help">
+                                <?= $usuario['rol'] === 'ADMIN' ? 
+                                    'Los administradores no están asignados a un establecimiento específico' : 
+                                    'Selecciona el establecimiento al que pertenece el usuario' ?>
+                            </div>
                         </div>
 
                         <!-- Tipo de encargado (solo para usuarios) -->

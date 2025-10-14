@@ -56,3 +56,73 @@
             });
         });
     
+        function toggleTipoEncargado() {
+    const rol = document.getElementById('rol').value;
+    const tipoEncargadoField = document.getElementById('tipo_encargado');
+    const establecimientoField = document.getElementById('id_establecimiento');
+    const establecimientoHelp = document.getElementById('establecimiento-help');
+    
+    // Manejar campo tipo_encargado
+    if (rol === 'USUARIO') {
+        tipoEncargadoField.disabled = false;
+        tipoEncargadoField.required = true;
+    } else {
+        tipoEncargadoField.disabled = true;
+        tipoEncargadoField.required = false;
+        if (rol !== 'USUARIO') {
+            tipoEncargadoField.value = '';
+        }
+    }
+    
+    // Manejar campo establecimiento
+    if (rol === 'ADMIN') {
+        establecimientoField.disabled = true;
+        establecimientoField.required = false;
+        establecimientoField.value = '';
+        establecimientoHelp.textContent = 'Los administradores no están asignados a un establecimiento específico';
+        establecimientoHelp.style.color = '#6b7280';
+    } else {
+        establecimientoField.disabled = false;
+        establecimientoField.required = true;
+        establecimientoHelp.textContent = 'Selecciona el establecimiento al que pertenece el usuario';
+        establecimientoHelp.style.color = '#6b7280';
+    }
+}
+
+// También añade esta función para el evento change del rol
+document.addEventListener('DOMContentLoaded', function() {
+    const rolSelect = document.getElementById('rol');
+    if (rolSelect) {
+        rolSelect.addEventListener('change', toggleTipoEncargado);
+    }
+    
+    // Ejecutar al cargar la página para establecer estado inicial
+    toggleTipoEncargado();
+});
+
+// Función para mostrar/ocultar contraseña
+function togglePassword() {
+    const passwordInput = document.getElementById('pass');
+    const toggleButton = document.querySelector('.toggle-password i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleButton.className = 'fas fa-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        toggleButton.className = 'fas fa-eye';
+    }
+}
+
+// Validación adicional del formulario
+document.getElementById('userForm').addEventListener('submit', function(e) {
+    const rol = document.getElementById('rol').value;
+    const establecimiento = document.getElementById('id_establecimiento').value;
+    
+    // Si no es ADMIN y no hay establecimiento seleccionado, prevenir envío
+    if (rol !== 'ADMIN' && !establecimiento) {
+        e.preventDefault();
+        alert('Por favor selecciona un establecimiento para este rol.');
+        document.getElementById('id_establecimiento').focus();
+    }
+});

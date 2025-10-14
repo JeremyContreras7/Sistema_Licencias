@@ -38,6 +38,8 @@ $establecimientos = $conexion->query("
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="css/stylemenu_admin.css">
+    <link rel="stylesheet" href="css/cerrarsesion.css">
+
     <link rel="icon" href="img/logo.png">
 </head>
 <body>
@@ -159,5 +161,7 @@ $establecimientos = $conexion->query("
         </main>
     </div>
 <script src="js/menuAdmin.js"></script>
+<script src="js/cerrarsesion.js"></script>
+
 </body>
 </html>

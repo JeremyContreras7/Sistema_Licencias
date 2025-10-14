@@ -16,6 +16,8 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "USUARIO") {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" href="img/logo.png">
   <link rel="stylesheet" href="css/stylemenu_funcionario.css">
+  <link rel="stylesheet" href="css/cerrarsesion.css">
+
 
 </head>
 <body>
@@ -109,5 +111,6 @@ if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "USUARIO") {
     </main>
   </div>
 <script src="js/menuFuncionario.js"></script>
+<script src="js/cerrarsesion.js"></script>
 </body>
 </html>
